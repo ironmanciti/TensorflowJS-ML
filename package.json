@@ -1,0 +1,27 @@
+{
+  "name": "TensorflowJS-ML",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "@tensorflow/tfjs": "^1.2.2",
+    "@tensorflow/tfjs-vis": "^1.1.0",
+    "jquery": "^3.4.1",
+    "train-test-split": "^1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ironmanciti/TensorflowJS-ML.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ironmanciti/TensorflowJS-ML/issues"
+  },
+  "homepage": "https://github.com/ironmanciti/TensorflowJS-ML#readme"
+}

@@ -5,7 +5,6 @@
  */
 async function getData() {
     const carsDataReq = await fetch('https://storage.googleapis.com/tfjs-tutorials/carsData.json');  
-    console.log(carsDataReq);
     
     const carsData = await carsDataReq.json();  
     const cleaned = carsData.map(car => ({
@@ -21,12 +20,11 @@ async function getData() {
     // sequential model 생성
     const model = tf.sequential(); 
     
-    // 1 hidden layer 의 shallow network 구성
-    model.add(tf.layers.dense({inputShape: [1], units: 1, useBias: true}));
-    
-    // output layer (linear regression)
-    model.add(tf.layers.dense({units: 1, useBias: true}));
-  
+    model.add(tf.layers.dense({inputShape: [1], units: 200, activation: 'relu'}));
+    model.add(tf.layers.dense({units: 50,activation: 'relu'}));
+    model.add(tf.layers.dense({units: 1}));
+
+    model.summary();
     return model;
   }
 
@@ -80,7 +78,7 @@ function convertToTensor(data) {
     });
     
     const batchSize = 28;
-    const epochs = 50;
+    const epochs = 10;
     
     return await model.fit(inputs, labels, {
       batchSize,
@@ -143,6 +141,8 @@ function convertToTensor(data) {
       x: d.horsepower,
       y: d.mpg,
     }));
+
+    console.log('data size = ', values.length);
   
     tfvis.render.scatterplot(
       {name: 'Horsepower v MPG'},

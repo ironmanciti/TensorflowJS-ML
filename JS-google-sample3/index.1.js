@@ -1,12 +1,12 @@
 let net;
 
-const classifier = knnClassifier.create();  //KNNImageClassifier() instance 반환
+const classifier = knnClassifier.create();
 
 const webcamElement = document.getElementById('webcam');
 
 async function setupWebcam() {
     return new Promise((resolve, reject) => {
-      const navigatorAny = navigator;     //windows.navigator 객체
+      const navigatorAny = navigator;
       navigator.getUserMedia = navigator.getUserMedia ||
           navigatorAny.webkitGetUserMedia || navigatorAny.mozGetUserMedia ||
           navigatorAny.msGetUserMedia;
@@ -26,30 +26,33 @@ async function setupWebcam() {
   async function app() {
     console.log('Loading mobilenet..');
   
-    // mobilenet model loading
+    // Load the model.
     net = await mobilenet.load();
     console.log('Sucessfully loaded model');
   
-    await setupWebcam();   
+    await setupWebcam();
   
-    // image 를 webcam 에서 읽고 특정 class 로 지정
+    // Reads an image from the webcam and associates it with a specific class
+    // index.
     const addExample = classId => {
-      // MobileNet 의 'conv_preds' layer 의 logit 을 KNN 의 example 로 추가
+      // Get the intermediate activation of MobileNet 'conv_preds' and pass that
+      // to the KNN classifier.
       const activation = net.infer(webcamElement, 'conv_preds');
-
-      classifier.addExample(activation, classId); 
+  
+      // Pass the intermediate activation to the classifier.
+      classifier.addExample(activation, classId);
     };
   
-    // button click 시 마다 해당 class 의 example 을 KNN 에 추가
+    // When clicking a button, add an example for that class.
     document.getElementById('class-a').addEventListener('click', () => addExample(0));
     document.getElementById('class-b').addEventListener('click', () => addExample(1));
     document.getElementById('class-c').addEventListener('click', () => addExample(2));
   
     while (true) {
-      if (classifier.getNumClasses() > 0) {   //Get the total number of classes
-        // webcam 에서 받은 image 의 MobileNet logit 을 KNN 의 prediction 에 입력
+      if (classifier.getNumClasses() > 0) {
+        // Get the activation from mobilenet from the webcam.
         const activation = net.infer(webcamElement, 'conv_preds');
-        // K-nearest prediction, default k=3. {label, classIndex, confidences} return
+        // Get the most likely class and confidences from the classifier module.
         const result = await classifier.predictClass(activation);
   
         const classes = ['A', 'B', 'C'];
