@@ -143,3 +143,56 @@ tense3d.data().then((result) => console.log('promise - ' + result)); //async dow
 console.log('synchronous - ' + tense3d.dataSync()); //synchronously download values
 
 console.log('get(0,0,1)', tense3d.get(0,0,1));
+
+// Exercise 1
+// y = mx + c 수식으로 coding
+//[3, 11, 21] 이 나오도록 coding
+function getYs(xs, m, c){
+    // Your code here 
+    const a = tf.scalar(m);
+    const b = tf.scalar(c);
+    return xs.mul(a).add(b);
+}
+
+const t1 = tf.tensor1d([1, 5, 10]);
+const t2 = getYs(t1, 2, 1);
+t2.print(); 
+
+// Exercise 2 :  MinMax scaling
+// (x - min) / (max - min)
+//[0.3703704, 1, 0.1111111, 0.345679, 0, 0.3333333]
+const t3 = tf.tensor1d([25, 76, 4, 23, -5, 22]);
+const max = t3.max();
+const min = t3.min();
+
+t3.sub(min).div(max.sub(min)).print();
+
+// Exerceis 3 : memory 관리
+//tf.dispose() 를 이용하여 memory 관리 후 numTensors 비교
+//tf.tidy() 를 이용하여 비교
+
+for (let i = 0; i < 100; i++){
+    let a = tf.tensor1d([1, 2, 3]);
+    a.dispose();
+}
+for (let i = 0; i < 100; i++){
+    let b = tf.tensor1d([4, 5, 6]);
+    b.dispose();
+}
+for (let i = 0; i < 100; i++) {
+    tf.tidy(() => {tf.tensor1d([1, 2, 3])});
+}
+for (let i = 0; i < 100; i++) {
+    tf.tidy(() => {tf.tensor1d([4, 5, 6])});
+}
+console.log(tf.memory().numTensors);
+
+//Exercise 4. rank 가 다른 tensor 간의 연산
+//1d + scalar
+tf.tensor1d([1,2,3]).add(tf.scalar(1)).print();
+//1d + 1d 
+tf.tensor1d([1,2,3]).add(tf.tensor([1,1,1])).print();
+//broadcasting
+tf.tensor1d([1,2,3]).add(tf.tensor2d([[1,1,1]])).print();
+//broadcasting
+tf.tensor1d([1,2,3]).add(tf.tensor2d([[1], [1], [1]])).print();

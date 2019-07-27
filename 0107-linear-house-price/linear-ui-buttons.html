@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script>
+    <title>Linear Classification</title>
+</head>
+
+<body>
+    <h1>Linear Classification</h1>
+    <script>
+        let EPOCHS = 100;
+        let X_train, X_test, y_train, y_test, model, normedFeatureTensor, normedLabelTensor;
+        let datapoints;
+        let pointsArray = [];
+        let seriesArray = [];
+
+        // scv file data visualization - scatter plot
+        async function plot() {
+            surface = {name: "Square Feet vs Price"}
+            data = {values: pointsArray, series: seriesArray}
+            options = {xLabel: "Square Feet", yLabel: "Price"}
+            tfvis.render.scatterplot(surface, data, options);
+        }
+
+        async function plotLine() {
+            const [xs, ys] = tf.tidy(() =>{
+                const normedXs = tf.linspace(0, 1, 100);
+                const normedYs = model.predict(normedXs.reshape([100, 1]));
+                const denormedXs = denormalize(normedXs, normedFeatureTensor.min, normedFeatureTensor.max);
+                const denormedYs = denormalize(normedYs, normedLabelTensor.min, normedLabelTensor.max);
+                return [denormedXs.dataSync(), denormedYs.dataSync()];
+            })
+            const pointsLine = Array.from(xs).map((x, index) => ({
+                x: x,
+                y: ys[index]
+            }));
+            // visualize data
+            pointsArray = [];
+            seriesArray = [];
+            pointsArray.push(dataPoints);
+            seriesArray.push("original")
+            pointsArray.push(pointsLine);
+            seriesArray.push("Predicted")
+            plot();
+        }
+
+        async function plotParams(weight, bias){
+            model.getLayer(undefined, 0).setWeights([
+                tf.tensor2d([[weight]]),
+                tf.tensor1d([bias])
+            ])
+            await plotLine();
+            layer = model.getLayer(undefined, 0);
+            tfvis.show.layer({name: "Layer 1"}, layer);
+
+        }
+
+        function toggleVisor() {
+            tfvis.visor().toggle();
+        }
+
+        // min-max scaling 함수
+        function normalize(tensor, prevMin=null, prevMax=null) {
+                const min = prevMin || tensor.min();
+                const max = prevMax || tensor.max();
+                const normedTensor = tensor.sub(min).div(max.sub(min));
+                return {
+                    tensor : normedTensor,
+                    min,
+                    max
+                }
+            }
+
+        // denormalization of min-max scaling 
+        function denormalize(tensor, min, max){
+            return denormedTensor = tensor.mul(max.sub(min)).add(min);
+        }
+
+        async function test(){
+            // test set validation
+            const lossTensor = await model.evaluate(X_test, y_test).dataSync();
+            //console.log(`Test set loss : ${parseFloat(lossTensor).toFixed(5)}`);
+            document.getElementById("testing-status").innerHTML = `Test set loss : ${parseFloat(lossTensor).toFixed(5)}`;
+        }
+
+        async function train(){
+            // Linear Model 을 layers API 를 이용하여 구축
+            document.getElementById("model-status").innerHTML = "Training...."
+
+            model = tf.sequential();
+            // linear model
+            // model.add(tf.layers.dense({
+            //     inputShape: [1],
+            //     units: 1,
+            //     activation: 'linear'  // 'sigmoid' 로 비선형 test
+            // }));
+            //non-linear model
+            model.add(tf.layers.dense({
+                inputShape: [1],
+                units: 10,
+                activation: 'relu'
+            }))
+            model.add(tf.layers.dense({
+                units: 10,
+                activation: 'relu'
+            }))
+            model.add(tf.layers.dense({
+                units: 1,
+                activation: 'linear'
+            }))
+            //model compile
+            const optimizer = tf.train.adam();
+            model.compile({
+                loss: 'meanSquaredError',
+                optimizer: optimizer,
+                metrics: ['mse']
+            })
+            //model.summary();
+            //summary 시각화
+            tfvis.show.modelSummary({name: "model summary"}, model);
+            //tfvis showLayr 로 layer 정보 시각화를 위해 getLayer
+            //1st argument 가 optional 이므로 undefined 로 한다.
+            let layer = model.getLayer(undefined, 0);
+            tfvis.show.layer({name: "Layer 1"}, layer);
+
+            //train model
+            //onEpochEnd: (epoch, log) => console.log(`Epoch ${epoch}: loss= ${log.loss}`)
+            // function onBatchEnd(batch, logs) {
+            //     console.log('Accuracy', logs.acc);
+            // }
+
+            const {onBatchEnd, onEpochEnd} = tfvis.show.fitCallbacks(
+                        {name: "Training Performance"},
+                         ['loss', 'acc']
+                         )
+
+            const result = await model.fit(X_train, y_train, {
+                epochs: EPOCHS,
+                batchSize: 32,
+                validationSplit: 0.2,
+                callbacks: {
+                    onBatchEnd, onEpochEnd,
+                    onEpochBegin: async () => {
+                        await plotLine();
+                        layer = model.getLayer(undefined, 0);
+                        tfvis.show.layer({name: "Layer 1"}, layer);
+                    }
+                }
+            });
+            // train, validation loss 출력
+            const trainLoss = result.history.loss.pop();
+            const validationLoss = result.history.val_loss.pop();
+            
+            document.getElementById("test-button").removeAttribute("disabled");
+            document.getElementById("save-button").removeAttribute("disabled");
+            document.getElementById("predict-button").removeAttribute("disabled");
+
+            document.getElementById("model-status").innerText
+                = `Train Loss = ${parseFloat(trainLoss).toPrecision(5)} \nValidation Loss = ${validationLoss}`;
+        }
+
+        const storageID = "kc-house-price-regression";
+        async function save() {
+            const saveResult = await model.save(`localstorage://${storageID}`);
+            document.getElementById("model-status").innerText 
+                = `Model 저장 - ${saveResult.modelArtifactsInfo.dateSaved}`;
+            document.getElementById("load-button").removeAttribute("disabled");
+        }
+
+        async function load() {
+            const storageKey = `localstorage://${storageID}`;
+            //local storage 내에 model 존재 여부 check
+            const models = await tf.io.listModels(storageKey);
+            const modelInfo = models[storageKey];
+            if (modelInfo){
+                //model load
+                model = await tf.loadLayersModel(storageKey);
+                //model summary 출력
+                tfvis.show.modelSummary({name: "Model Summary"}, model);
+            } else {
+                alert("저장된 model 이 없습니다.");
+            }
+        }
+
+        async function predict() {
+            const predictionInput = parseInt(document.getElementById('predict-input').value);
+            if (isNaN(predictionInput)) {
+                alert("숫자를 입력하세요");
+            } else {
+                tf.tidy(() => {
+                    const inputTensor = tf.tensor1d([predictionInput]);
+                    //normalize
+                    const normedInput = normalize(inputTensor, normedFeatureTensor.min, normedFeatureTensor.max);
+                    const prediction = model.predict(normedInput.tensor)
+                    //denormalize
+                    const denormedPrediction = denormalize(prediction, normedFeatureTensor.min, normedFeatureTensor.max);
+                    const output = denormedPrediction.dataSync()[0];
+                    document.getElementById("predict-output").innerHTML 
+                        = `Predicted Price ($1,000) <br> <span stype="font-size: 2em"> ${parseFloat(output).toFixed(2)}</span>`;
+                })
+            }
+            plotLine();
+        }
+
+        async function run() {
+            // csv data loading
+            const houseSales = tf.data.csv("./kc_house_data.csv");
+
+            const points = houseSales.map(record => ({
+                x: record.sqft_living,
+                y: record.price
+            }));
+
+            dataPoints = await points.toArray();
+
+            // DATA shuffle before train/test split
+            //tf.util.shuffle(dataPoints);
+            dataPoints = _.shuffle(dataPoints);
+
+            // visualize data
+            pointsArray.push(dataPoints);
+            seriesArray.push("original")
+            plot();
+
+            // feature extraction and tensor 변환 
+            const featureValues = dataPoints.map(p => p.x);
+            const featureTensor = tf.tensor2d(featureValues, [featureValues.length, 1]);
+            const labelValues = dataPoints.map(p => p.y);
+            const labelTensor = tf.tensor2d(labelValues, [labelValues.length, 1]);
+
+            // featureTensor.print();
+            // labelTensor.print();
+
+            // normalized fearue & label
+            normedFeatureTensor = normalize(featureTensor);
+            normedLabelTensor = normalize(labelTensor);
+
+            featureTensor.dispose();
+            labelTensor.dispose();
+
+            // train / test set split
+            [X_train, X_test] = tf.split(normedFeatureTensor.tensor, 2);
+            [y_train, y_test] = tf.split(normedLabelTensor.tensor, 2);
+            //X_train.print(true);
+            
+            // normedFeatureTensor.tensor.print();
+            // normedLabelTensor.tensor.print();
+            // denormalize(normedFeatureTensor.tensor, 
+            //                 normedFeatureTensor.min, normedFeatureTensor.max).print();
+            
+            // Visualize normalized scatterplot   
+            // scatterplot 은 [{x, y}] nested tuple 형태의 array 를 입력으로 요구           
+            // const normedFeatureArr = normedFeatureTensor.tensor.arraySync();
+            // const normedLabelArr = normedLabelTensor.tensor.arraySync();
+            // const normedPoints = [];
+            // for (let i = 0; i < normedFeatureArr.length; i++){
+            //     normedPoints.push({x: normedFeatureArr[i], y: normedLabelArr[i]});
+            // }
+            // plot(normedPoints, "Normed Square Feet");
+
+            // data load 끝나면 button 활성화
+            document.getElementById("train-button").removeAttribute("disabled");
+        };
+
+        run();
+    </script>
+    <button onclick="toggleVisor()">Toggle Visor</button><br><br>
+    <div id="model-status">No trained model</div>
+    <div id="testing-status"></div>
+    <button id="train-button" disabled onclick="train()">Train New Model</button>
+    <button id="test-button" disabled onclick="test()">Test Trained Model</button><br><br>
+    <button id="save-button" disabled onclick="save()">Save Trained Model</button>
+    <button id="load-button" disabled onclick="load()">Load Saved Model</button><br><br>
+    <input id="predict-input" placeholder="2000" />
+    <button id="predict-button" disabled onclick="predict()">Predict new Data</button><br>
+    <div id="predict-output"></div>
+</body>
+
+</html>
