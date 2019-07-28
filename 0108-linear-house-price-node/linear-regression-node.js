@@ -1,7 +1,7 @@
 const tf = require('@tensorflow/tfjs');
 require('@tensorflow/tfjs-node');
 
-const loadCSV = require('./load-csv');
+const loadCSV = require('../utils/load-csv');
 const path = require('path');
 
 let {features, labels} = loadCSV(path.join(__dirname, 'kc_house_data.csv'), {
@@ -51,9 +51,16 @@ model.add(tf.layers.dense({
 }));
 model.compile({loss: 'meanSquaredError', optimizer: 'sgd'});
 model.summary();
+debbuger;
 model.fit(X_train, y_train, {
-    epochs: 30,
+    epochs: 3,
     callbacks: {
         onEpochEnd: (epoch, log) => console.log(`Epoch= ${epoch}, Loss= ${log.loss}`)
     }
-});
+}).then((history) => {
+    const result = model.evaluate(X_test, y_test);
+    console.log(`Test set loss : ${parseFloat(result.dataSync()).toFixed(5)}`);
+})
+
+
+ 

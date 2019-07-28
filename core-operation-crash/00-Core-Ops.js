@@ -1,4 +1,4 @@
-const tf = require('@tensorflow/tfjs-node-gpu')
+const tf = require('@tensorflow/tfjs-node')
 // Tensors
 const tense1 = tf.tensor([1,2,3,4]);
 const tense2 = tf.tensor([1,2,3,4], [4]);
@@ -37,6 +37,11 @@ tf.print(['bias with initalValues = ', biases]);
 const updatedValues = tf.tensor1d([0,1,0,1,0]);
 biases.assign(updatedValues);
 tf.print(["bias 는 variable 이므로 mutable / updated biases = ", biases]);
+
+const vtense = tf.variable(tf.tensor([1,2,3,4]));
+vtense.print();
+vtense.assign(tf.tensor([3,4,5,6]));
+vtense.print();
 
 // scalar 
 tf.scalar(4).print();
