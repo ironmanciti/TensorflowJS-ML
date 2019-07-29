@@ -201,3 +201,25 @@ tf.tensor1d([1,2,3]).add(tf.tensor([1,1,1])).print();
 tf.tensor1d([1,2,3]).add(tf.tensor2d([[1,1,1]])).print();
 //broadcasting
 tf.tensor1d([1,2,3]).add(tf.tensor2d([[1], [1], [1]])).print();
+
+//Dataset ops
+let count = 0;
+function mapping(x) {
+    count++;
+    return x;
+}
+
+async function run(){
+    console.log('Skip after mapping');
+    await tf.data.array([1, 2, 3, 4, 5, 6])
+    .map(mapping)
+    .skip(6)
+    .forEachAsync(x => undefined);
+    console.log(`count is ${count}`);
+}
+
+run().then(() =>{
+    console.log('success');
+}).catch((e) => {
+    console.log(e);
+})
