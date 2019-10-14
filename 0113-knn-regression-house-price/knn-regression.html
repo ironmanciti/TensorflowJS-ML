@@ -1,0 +1,76 @@
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+    </head>
+    <body>
+        <h1>K-Nearest Neighbor Regression Practice</h1>
+    <script>
+        const EPOCHS = 2
+        const HouseSalesDataset = tf.data.csv(
+            'http://127.0.0.1:8080/kc_house_data.csv', {
+                columnConfigs: {
+                    lat: { isLabel: false },
+                    long: { isLabel: false },
+                    sqft_living: { isLabel: false },
+                    price: { isLabel: true }
+                },
+                configuredColumnsOnly: true
+            });
+        
+        function knn(features, labels, predictionPoint, k){
+            //normalize data by Standardization
+            const {mean, variance} = tf.moments(features, axis=0);
+            const scFeatures = features.sub(mean).div(tf.sqrt(variance));
+            const scPoints = predictionPoint.sub(mean).div(tf.sqrt(variance));
+            
+            // 1) Unknown case 와 모든 data point 간의 거리를 계산
+            const result = scFeatures
+                           .sub(scPoints)
+                           .pow(2)
+                           .sum(axis=1, keepDims=true)
+                           .pow(0.5)  //--> 각 feature points 와 predict point 간의 거리
+                           .concat(labels, axis=1)  //[distance, price] pair 작성
+                           .unstack()  //rank R tensor 를 rank (R-1) tensor 의 list 로 변환
+                           .sort((a, b) => a > b ? 1:-1) // 거리별 오름차순 정렬
+                           .slice(0, k)  // 2) k nearest elements 선택
+                           .reduce((acc, pair) => {    
+                               return acc + pair.dataSync()[1]
+                           }, 0) / k;   // 3) k nearest elements 의 평균값                       
+            //console.log(result)
+            return result;
+        }
+
+        async function run(){
+            const points = HouseSalesDataset
+                .map(({ xs, ys }) => ({
+                    x: Object.values(xs),
+                    y: Object.values(ys)
+                }));
+
+            const dataPoints = await points.toArray();
+            const featureValues = dataPoints.map(p => p.x);
+            const labelValues = dataPoints.map(p => p.y);
+
+            //feature extraction and tensor 변환
+            const featureTensor = tf.tensor2d(featureValues, [featureValues.length, 3]);
+            const labelTensor = tf.tensor2d(labelValues, [labelValues.length, 1]);
+
+            //train/test split
+            const test_size = 20;
+            const train_size = featureTensor.shape[0] - test_size;
+            const [X_train, X_test] = tf.split(featureTensor, [train_size, test_size]);
+            const [y_train, y_test] = tf.split(labelTensor, [train_size, test_size]);
+            
+            X_test.arraySync().forEach((point, i) => {
+                const result = knn(X_train, y_train, X_test.slice(0, 1), 10);
+                const label = y_test.arraySync()[i][0];
+                //accuracy 계산
+                const err = ((label - result) / label * 100);
+                console.log(`label ${label} ==> result ${result}, error rate = ${err}%`);
+            });
+        }
+        run();
+    </script>
+    </body>
+</html>

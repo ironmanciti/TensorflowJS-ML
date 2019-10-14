@@ -1,18 +1,17 @@
 //tensorflow.js Layers-API 이용
 
+const X = Array(100).fill(0).map(x => Math.random() * 100 - Math.random() * 50);
+const y = X.map(x => 2.5 * x + 5 + Math.random() * 50);
+
+// y = 2.5 * X + 5 + noise
 const trainData = {
-X:  [0.080, 9.000, 0.001, 0.100, 8.000, 5.000, 0.100, 6.000, 0.050, 0.500,
-            0.002, 2.000, 0.005, 10.00, 0.010, 7.000, 6.000, 5.000, 1.000, 1.000],
-y: [0.135, 0.739, 0.067, 0.126, 0.646, 0.435, 0.069, 0.497, 0.068, 0.116,
-            0.070, 0.289, 0.076, 0.744, 0.083, 0.560, 0.480, 0.399, 0.153, 0.149]
+    X: X,
+    y: y
 };
 
-let zip = (arr1, arr2) => arr1.map((x, i) => { return {'x': x, 'y': arr2[i]}});
-const toy_data = zip(trainData.X, trainData.y);
-
 // Data 를 tensor 로 변환 : tf.tensor2d(array, shape)
-trainXs = tf.tensor2d(trainData.X, [20, 1]);
-trainYs = tf.tensor2d(trainData.y, [20, 1]);
+trainXs = tf.tensor2d(trainData.X, [100, 1]);
+trainYs = tf.tensor2d(trainData.y, [100, 1]);
 
 // simple Linear Regression model : y = wX + b
 // no hidden layer
@@ -39,6 +38,8 @@ model.compile({optimizer: optimizer, loss: 'meanSquaredError'});
 
     console.log(k, b);
 
+    let zip = (arr1, arr2) => arr1.map((x, i) => { return {'x': x, 'y': arr2[i]}});
+    const toy_data = zip(trainData.X, trainData.y);
     const prediction = trainData.X.map(x => ({'x':x, 'y':k*x+b}));
     
     tfvis.render.scatterplot(

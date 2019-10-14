@@ -8,35 +8,90 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
     <title>Binary Classification</title>
 </head>
-
+<style>
+    body {
+        margin: 10px 20px 30px 40px
+    }
+</style>
 <body>
-    <h1>Binary Classification</h1>
+    <h1>Binary Classification of Social_Network_Ads</h1>
     <script>
         const EPOCHS = 50;
         let normedFeatures = [], normedLabels = []; 
-        let normedFearureTensors, labelTensors;
+        let normedFearureTensor, labelTensor;
         let X_train, X_test, y_train, y_test, model;
+        async function run() {
+            // csv data loading
+            const socialSales = tf.data.csv("./Social_Network_Ads.csv", {
+                columnNames: ['UserID', 'Gender', 'Age', 'EstimatedSalary', 'Purchased'],
+                columnConfigs: {
+                    Gender: { isLabel: false },
+                    Age: { isLabel: false },
+                    EstimatedSalary: { isLabel: false },
+                    Purchased: { isLabel: true }
+                },
+                configuredColumnsOnly: true
+            });
+
+            const points = socialSales.map(({ xs, ys }) => ({
+                x: Object.values(xs),
+                y: Object.values(ys),
+            }));
+
+            let dataPoints = await points.toArray();
+            //shuffling data
+            dataPoints = _.shuffle(dataPoints);
+
+            plot(dataPoints);
+
+            // category 변수 처리
+            dataPoints.map(p => {
+                if (p.x[0] === 'Male') {
+                    p.x[0] = 1;
+                } else if (p.x[0] === 'Female') {
+                    p.x[0] = 0;
+                }
+            })
+
+            // feature extraction and tensor 변환
+            const featureValues = dataPoints.map(p => p.x)
+            const featureTensor = tf.tensor2d(featureValues, [featureValues.length, 3])
+
+            const labelValues = dataPoints.map(p => p.y)
+            const labelTensor = tf.tensor2d(labelValues, [labelValues.length, 1])
+
+            //normalization
+            normedFearureTensor = MinMaxScaling(featureTensor);
+            normedLabelTensor = MinMaxScaling(labelTensor);
+
+            featureTensor.dispose();
+            labelTensor.dispose();
+
+            // train / test set split
+            const trainLen = Math.floor(normedFearureTensor.tensor.shape[0] * 0.75);
+            const testLen = normedFearureTensor.tensor.shape[0] - trainLen;
+            [X_train, X_test] = tf.split(normedFearureTensor.tensor, [trainLen, testLen]);
+            [y_train, y_test] = tf.split(normedLabelTensor.tensor, [trainLen, testLen]);
+
+            document.getElementById("train-button").removeAttribute("disabled");
+        }
         // data plot
-        async function plot(dataPoints, sameSize=null) {
+        async function plot(dataPoints) {
             const surface = {name: "Binary Scatterplot"};
-            const series1 = dataPoints.filter(point => point.c === 1)
+            const series1 = dataPoints.filter(point => point.y[0] === 1) // 구매
                             .map(point => ({
-                                x: point.x,
-                                y: point.y
-                            }))
-            let len;
-            if (sameSize) {
-                len = series1.length;
-            } else {
-                len = dataPoints.length;
-            }
-            const series2 = dataPoints.filter(point => point.c === 0)
+                                x: point.x[1],  //age
+                                y: point.x[2]   //salary
+                            }))         
+
+            const series2 = dataPoints.filter(point => point.y[0] === 0)  // 비구매
                             .map(point => ({
-                                x: point.x,
-                                y: point.y
-                            })).slice(0,len);
+                                x: point.x[1],   //age
+                                y: point.x[2]    //salary
+                            }));
 
             const data = {values: [series1, series2], series: ['구매', '비구매']};
             const options = {xLabel: "Age", yLabel: "Salary"}
@@ -48,32 +103,16 @@
         }
 
         //data normalization - min-max scaling
-        function normalize(values, prevMin=null, prevMax=null) {
-                let min, max;
-                if (prevMin != null) {  //prevMin, prevMax 가 0 인 경우도 감안해야 하므로 != null 로 check
-                    min = prevMin;
-                } else {
-                    min = Math.min(...values);
-                }
-                if (prevMax != null) {
-                    max = prevMax;
-                } else {
-                    max = Math.max(...values);
-                }
-
-                const normedValues = values.map(value => (value - min) / (max - min));
-
+        function MinMaxScaling(tensor, prevMin=null, prevMax=null) {
+                const min = prevMin || tensor.min();
+                const max = prevMax || tensor.max();
+                const normedTensor = tensor.sub(min).div(max.sub(min));
                 return {
-                    values : normedValues,
+                    tensor : normedTensor,
                     min,
                     max
                 }
             }
-
-        // denormalization of min-max scaling 
-        function denormalize(values, min, max){
-            return denormedValues = values.map(value => value * (max - min) + min);
-        }
 
         async function train(){
             // Linear Model 을 layers API 를 이용하여 구축
@@ -108,29 +147,17 @@
             //1st argument 가 optional 이므로 undefined 로 한다.
             let layer = model.getLayer(undefined, 0);
             tfvis.show.layer({name: "Layer 1"}, layer);
-
+                
             //train model
-            //onEpochEnd: (epoch, log) => console.log(`Epoch ${epoch}: loss= ${log.loss}`)
-            // function onBatchEnd(batch, logs) {
-            //     console.log('Accuracy', logs.acc);
-            // }
-
-            const {onBatchEnd, onEpochEnd} = tfvis.show.fitCallbacks(
-                        {name: "Training Performance"},
-                         ['loss', 'acc']
-                         )
-
             const result = await model.fit(X_train, y_train, {
                 epochs: EPOCHS,
                 batchSize: 32,
                 validationSplit: 0.2,
-                callbacks: {
-                    onBatchEnd, onEpochEnd,
-                    onEpochBegin: async () => {
-                        layer = model.getLayer(undefined, 0);
-                        tfvis.show.layer({name: "Layer 1"}, layer);
-                    }
-                }
+                callbacks: 
+                    tfvis.show.fitCallbacks(
+                        { name: 'Training Performance' },
+                        ['loss', 'acc', 'val_loss', 'val_acc']
+                    )
             });
             // train, validation loss 출력
             const trainLoss = result.history.loss.pop();
@@ -146,16 +173,14 @@
 
         async function test(){
             // test set validation
-            //const lossTensor = await model.evaluate(X_test, y_test).dataSync();
             const lossTensor = model.evaluate(X_test, y_test);
-            const loss = (await lossTensor[0].dataSync())[0];
+            const loss = await lossTensor[0].dataSync()[0];
             const accuracy = await lossTensor[1].dataSync()[0];
-            // console.log(`Test set loss : ${parseFloat(loss).toFixed(5)}`);
-            // console.log(`Test set accuracy : ${parseFloat(accuracy).toFixed(5)}`);
+
             document.getElementById("testing-status").innerHTML 
                 = `Test set loss : ${parseFloat(loss).toFixed(5)}  accuracy : ${parseFloat(accuracy).toFixed(5)}`;
+
             //confusion maxtrix 시각화
-            
             const predictions = model.predict(X_test)
             const predClasses = tf.tidy(() => tf.floor(predictions.add(0.5)).transpose().squeeze());
             const labelClasses = tf.tidy(() => tf.floor(y_test.add(0.5)).transpose().squeeze());
@@ -194,104 +219,49 @@
         }
 
         async function predict() {
-            const predictionInputOne = [parseInt(document.getElementById('predict-input-1').value)];
-            const predictionInputTwo = [parseInt(document.getElementById('predict-input-2').value)];
-            const predictionInputThree = [parseInt(document.getElementById('predict-input-3').value)];
+            const predictionInputOne = parseInt(document.getElementById('predict-input-1').value);
+            const predictionInputTwo = parseInt(document.getElementById('predict-input-2').value);
+            const predictionInputThree = parseInt(document.getElementById('predict-input-3').value);
 
             if (isNaN(predictionInputOne) || isNaN(predictionInputTwo) || isNaN(predictionInputThree)) {
                 alert("숫자를 입력하세요");
             } else {
-                const features = [predictionInputOne, predictionInputTwo, predictionInputThree];
-                //normalize
-                const featureValues = [];
-                for (let i = 0; i < features.length; i++){
-                    const temp = normalize(features[i], normedFeatures[i].min, normedFeatures[i].max);
-                    featureValues.push(temp.values);
-                }
-                
+                const features = [predictionInputOne, predictionInputTwo, predictionInputThree];    
                 // tensor 변환
-                const tempTensors = tf.tensor2d(featureValues, [featureValues.length, featureValues[0].length]);
-                normedFearureTensors = tf.transpose(tempTensors); 
+                const tempTensors = tf.tensor2d(features, [1, 3]);
+
+                const normedTensor = 
+                        MinMaxScaling(tempTensors, normedFearureTensor.min, normedFearureTensor.max); 
                 tempTensors.dispose();
+                console.log(normedTensor)
 
-                const prediction = model.predict(normedFearureTensors);             
-                   
-                document.getElementById("predict-output").innerHTML 
-                    = `Predicted Class ${parseFloat(prediction.dataSync()[0]).toFixed(2)}`;
-
-            }
-        }
-
-        async function run() {
-            // csv data loading
-            const houseSales = tf.data.csv("./Social_Network_Ads.csv", {
-                columnNames: ['User ID','Gender','Age','EstimatedSalary','Purchased']
-            });
-            const points = houseSales.map(record => ({
-                x: record.Age,
-                y: record.EstimatedSalary,
-                x1: record.Gender,
-                c: record.Purchased,
-            }))
-            let dataPoints = await points.toArray();
-            //shuffling data
-            dataPoints = _.shuffle(dataPoints);
-            
-            plot(dataPoints, sameSize=false);
-
-            // category 변수 처리
-            dataPoints.map(p => {
-                if (p.x1 === 'Male'){
-                    p.x1 = 1;
-                } else if (p.x1 === 'Female'){
-                    p.x1 = 0;
+                const prediction = model.predict(normedTensor.tensor);             
+                
+                let predicted;
+                if (prediction.dataSync()[0] > 0.5){
+                    predicted = 'Purchased';
+                } else {
+                    predicted = 'Not Purchased';
                 }
-            })
-        
-            // feature extraction 
-            const features = [];
-            const labels = [];
-            features.push(dataPoints.map(p => p.x1));
-            features.push(dataPoints.map(p => p.x));
-            features.push(dataPoints.map(p => p.y));
-            labels.push(dataPoints.map(p => p.c));
-            
-            // Normalize
-            const featureValues = [];
-            for (let i = 0; i < features.length; i++){
-                normedFeatures.push(normalize(features[i]));
-                featureValues.push(normedFeatures[i].values);
+                document.getElementById("predict-output").innerHTML 
+                    = `Predicted Classificaion - ${predicted}`;
+
             }
-
-            // tensor 변환
-            const tempTensors = tf.tensor2d(featureValues, [featureValues.length, featureValues[0].length]);
-
-            normedFearureTensors = tf.transpose(tempTensors); 
-            labelTensors = tf.tensor2d(labels).transpose();
-
-            tempTensors.dispose();
-
-            // train / test set split
-            const trainLen = Math.floor(normedFearureTensors.shape[0] * 0.75);
-            const testLen = normedFearureTensors.shape[0] - trainLen;
-            [X_train, X_test] = tf.split(normedFearureTensors, [trainLen, testLen]);
-            [y_train, y_test] = tf.split(labelTensors, [trainLen, testLen]);
-
-            document.getElementById("train-button").removeAttribute("disabled");
         }
+
         run();
     </script>
-    <button onclick="toggleVisor()">Toggle Visor</button><br><br>
+    <button type="button" class="btn btn-primary" onclick="toggleVisor()">Toggle Visor</button><br><br>
     <div id="model-status">No trained model</div>
     <div id="testing-status"></div>
-    <button id="train-button" disabled onclick="train()">Train New Model</button>
-    <button id="test-button" disabled onclick="test()">Test Trained Model</button><br><br>
-    <button id="save-button" disabled onclick="save()">Save Trained Model</button>
-    <button id="load-button" disabled onclick="load()">Load Saved Model</button><br><br>
+    <button type="button" class="btn btn-primary" id="train-button" disabled onclick="train()">Train New Model</button>
+    <button type="button" class="btn btn-primary" id="test-button" disabled onclick="test()">Test Trained Model</button><br><br>
+    <button type="button" class="btn btn-primary" id="save-button" disabled onclick="save()">Save Trained Model</button>
+    <button type="button" class="btn btn-primary" id="load-button" disabled onclick="load()">Load Saved Model</button><br><br>
     <input id="predict-input-1" placeholder="Gender F:0, M:1" /><br>
     <input id="predict-input-2" placeholder="Age 27" /><br>
     <input id="predict-input-3" placeholder="Salary 57000" /><br>
-    <button id="predict-button" disabled onclick="predict()">Predict new Data</button><br>
+    <button type="button" class="btn btn-primary" id="predict-button" disabled onclick="predict()">Predict new Data</button><br>
     <div id="predict-output"></div>
 </body>
 

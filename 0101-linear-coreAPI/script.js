@@ -10,6 +10,7 @@ const m = tf.variable(tf.scalar(Math.random()));
 const b = tf.variable(tf.scalar(Math.random()));
 
 const y_pred = x => m.mul(x).add(b);
+
 const loss = (prediction, label) => prediction.sub(label).square().mean();
 const optimizer = tf.train.sgd(0.0005);
 

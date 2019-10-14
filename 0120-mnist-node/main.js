@@ -1,4 +1,4 @@
-const tf = require('@tensorflow/tfjs-node-gpu');
+const tf = require('@tensorflow/tfjs-node');
 
 const data = require('./data');
 const model = require('./model');
@@ -12,7 +12,7 @@ async function run(){
     model.summary();
     // train using data
     await model.fit(trainImages, trainLabels, {
-        epochs: 10,
+        epochs: 1,
         batchSize: 128,
         validationSplit: 0.15,
         verbose: 1
