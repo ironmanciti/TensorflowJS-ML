@@ -1,23 +1,11 @@
-//confusion matrix
-
-const rows = 5;
-const cols = 5;
-const values = [];
-
-for (let i=0; i<rows; i++){
-    const row = [];
-    for (let j=0; j<cols; j++){
-        row.push(Math.floor(Math.random() * 50));
-    }
-    values.push(row);
+async function run(){
+    const labels = tf.tensor1d([1, 2, 4]);
+    const predictions = tf.tensor1d([2, 2, 4]);
+    result = await tfvis.metrics.confusionMatrix(labels, predictions);
+    console.log(result)
+    const data = { values : result };
+    const surface = { name: 'Confusion Matrix', tab: 'Charts' };
+    tfvis.render.confusionMatrix(surface, data, { shadeDiagonal: false });
 }
-
-const data = {values};
-
-//render to visor
-const surface = {name: 'Confusion Matrix', tab: 'Charts'};
-tfvis.render.confusionMatrix(surface, data, {shadeDiagonal: false});
-
-
-
+run();
 
