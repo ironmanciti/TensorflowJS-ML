@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <title>Binary Classification</title>
+</head>
+<style>
+    body {
+        margin: 10px 20px 30px 40px
+    }
+</style>
+<body>
+    <h1>Binary Classification of Social_Network_Ads</h1>
+    <script>
+        const EPOCHS = 50;
+        let normedFeatures = [], normedLabels = []; 
+        let normedFearureTensor, labelTensor;
+        let X_train, X_test, y_train, y_test, model;
+        async function run() {
+            // csv data loading
+            const socialSales = tf.data.csv("./Social_Network_Ads.csv", {
+                columnNames: ['UserID', 'Gender', 'Age', 'EstimatedSalary', 'Purchased'],
+                columnConfigs: {
+                    Gender: { isLabel: false },
+                    Age: { isLabel: false },
+                    EstimatedSalary: { isLabel: false },
+                    Purchased: { isLabel: true }
+                },
+                configuredColumnsOnly: true
+            });
+
+            const points = socialSales.map(({ xs, ys }) => ({
+                x: Object.values(xs),
+                y: Object.values(ys),
+            }));
+
+            let dataPoints = await points.toArray();
+            //shuffling data
+            dataPoints = _.shuffle(dataPoints);
+
+            plot(dataPoints);
+
+            // category 변수 처리
+            dataPoints.map(p => {
+                if (p.x[0] === 'Male') {
+                    p.x[0] = 1;
+                } else if (p.x[0] === 'Female') {
+                    p.x[0] = 0;
+                }
+            })
+
+            // feature extraction and tensor 변환
+            const featureValues = dataPoints.map(p => p.x)
+            const featureTensor = tf.tensor2d(featureValues, [featureValues.length, 3])
+
+            const labelValues = dataPoints.map(p => p.y)
+            const labelTensor = tf.tensor2d(labelValues, [labelValues.length, 1])
+
+            //normalization
+            normedFearureTensor = MinMaxScaling(featureTensor);
+            normedLabelTensor = MinMaxScaling(labelTensor);
+
+            featureTensor.dispose();
+            labelTensor.dispose();
+
+            // train / test set split
+            const trainLen = Math.floor(normedFearureTensor.tensor.shape[0] * 0.75);
+            const testLen = normedFearureTensor.tensor.shape[0] - trainLen;
+            [X_train, X_test] = tf.split(normedFearureTensor.tensor, [trainLen, testLen]);
+            [y_train, y_test] = tf.split(normedLabelTensor.tensor, [trainLen, testLen]);
+
+            document.getElementById("train-button").removeAttribute("disabled");
+        }
+        // data plot
+        async function plot(dataPoints) {
+            const surface = {name: "Binary Scatterplot"};
+            const series1 = dataPoints.filter(point => point.y[0] === 1) // 구매
+                            .map(point => ({
+                                x: point.x[1],  //age
+                                y: point.x[2]   //salary
+                            }))         
+
+            const series2 = dataPoints.filter(point => point.y[0] === 0)  // 비구매
+                            .map(point => ({
+                                x: point.x[1],   //age
+                                y: point.x[2]    //salary
+                            }));
+
+            const data = {values: [series1, series2], series: ['구매', '비구매']};
+            const options = {xLabel: "Age", yLabel: "Salary"}
+            tfvis.render.scatterplot(surface, data, options)
+        }
+
+        function toggleVisor() {
+            tfvis.visor().toggle();
+        }
+
+        //data normalization - min-max scaling
+        function MinMaxScaling(tensor, prevMin=null, prevMax=null) {
+                const min = prevMin || tensor.min();
+                const max = prevMax || tensor.max();
+                const normedTensor = tensor.sub(min).div(max.sub(min));
+                return {
+                    tensor : normedTensor,
+                    min,
+                    max
+                }
+            }
+
+        async function train(){
+            // Linear Model 을 layers API 를 이용하여 구축
+            document.getElementById("model-status").innerHTML = "Training...."
+
+            model = tf.sequential();
+            
+            model.add(tf.layers.dense({
+                inputShape: [3],
+                units: 50,
+                activation: 'relu'
+            }))
+            model.add(tf.layers.dense({
+                units: 20,
+                activation: 'relu'
+            }))
+            model.add(tf.layers.dense({
+                units: 1,
+                activation: 'sigmoid'
+            }))
+            //model compile
+            const optimizer = tf.train.adam();
+            model.compile({
+                loss: 'binaryCrossentropy',
+                optimizer: optimizer,
+                metrics: ['accuracy']
+            })
+            //model.summary();
+            //summary 시각화
+            tfvis.show.modelSummary({name: "model summary"}, model);
+            //tfvis showLayr 로 layer 정보 시각화를 위해 getLayer
+            //1st argument 가 optional 이므로 undefined 로 한다.
+            let layer = model.getLayer(undefined, 0);
+            tfvis.show.layer({name: "Layer 1"}, layer);
+                
+            //train model
+            const result = await model.fit(X_train, y_train, {
+                epochs: EPOCHS,
+                batchSize: 32,
+                validationSplit: 0.2,
+                callbacks: 
+                    tfvis.show.fitCallbacks(
+                        { name: 'Training Performance' },
+                        ['loss', 'acc', 'val_loss', 'val_acc']
+                    )
+            });
+            // train, validation loss 출력
+            const trainLoss = result.history.loss.pop();
+            const validationLoss = result.history.val_loss.pop();
+            
+            document.getElementById("test-button").removeAttribute("disabled");
+            document.getElementById("save-button").removeAttribute("disabled");
+            document.getElementById("predict-button").removeAttribute("disabled");
+
+            document.getElementById("model-status").innerText
+                = `Train Loss = ${parseFloat(trainLoss).toPrecision(5)} \nValidation Loss = ${validationLoss}`;
+        }
+
+        async function test(){
+            // test set validation
+            const lossTensor = model.evaluate(X_test, y_test);
+            const loss = await lossTensor[0].dataSync()[0];
+            const accuracy = await lossTensor[1].dataSync()[0];
+
+            document.getElementById("testing-status").innerHTML 
+                = `Test set loss : ${parseFloat(loss).toFixed(5)}  accuracy : ${parseFloat(accuracy).toFixed(5)}`;
+
+            //confusion maxtrix 시각화
+            const predictions = model.predict(X_test)
+            const predClasses = tf.tidy(() => tf.floor(predictions.add(0.5)).transpose().squeeze());
+            const labelClasses = tf.tidy(() => tf.floor(y_test.add(0.5)).transpose().squeeze());
+            const confusionMaxtrix 
+                = await tfvis.metrics.confusionMatrix(labelClasses, predClasses)
+
+            container = {name: 'Confusion Matrix', tab: 'Evaluation'}
+            tfvis.render.confusionMatrix(container, {values: confusionMaxtrix});
+
+            predictions.dispose();
+            predClasses.dispose();
+            labelClasses.dispose();
+        }
+
+        const storageID = "kc-sales-binary";
+        async function save() {
+            const saveResult = await model.save(`localstorage://${storageID}`);
+            document.getElementById("model-status").innerText 
+                = `Model 저장 - ${saveResult.modelArtifactsInfo.dateSaved}`;
+            document.getElementById("load-button").removeAttribute("disabled");
+        }
+
+        async function load() {
+            const storageKey = `localstorage://${storageID}`;
+            //local storage 내에 model 존재 여부 check
+            const models = await tf.io.listModels(storageKey);
+            const modelInfo = models[storageKey];
+            if (modelInfo){
+                //model load
+                model = await tf.loadLayersModel(storageKey);
+                //model summary 출력
+                tfvis.show.modelSummary({name: "Model Summary"}, model);
+            } else {
+                alert("저장된 model 이 없습니다.");
+            }
+        }
+
+        async function predict() {
+            const predictionInputOne = parseInt(document.getElementById('predict-input-1').value);
+            const predictionInputTwo = parseInt(document.getElementById('predict-input-2').value);
+            const predictionInputThree = parseInt(document.getElementById('predict-input-3').value);
+
+            if (isNaN(predictionInputOne) || isNaN(predictionInputTwo) || isNaN(predictionInputThree)) {
+                alert("숫자를 입력하세요");
+            } else {
+                const features = [predictionInputOne, predictionInputTwo, predictionInputThree];    
+                // tensor 변환
+                const tempTensors = tf.tensor2d(features, [1, 3]);
+
+                const normedTensor = 
+                        MinMaxScaling(tempTensors, normedFearureTensor.min, normedFearureTensor.max); 
+                tempTensors.dispose();
+                console.log(normedTensor)
+
+                const prediction = model.predict(normedTensor.tensor);             
+                
+                let predicted;
+                if (prediction.dataSync()[0] > 0.5){
+                    predicted = 'Purchased';
+                } else {
+                    predicted = 'Not Purchased';
+                }
+                document.getElementById("predict-output").innerHTML 
+                    = `Predicted Classificaion - ${predicted}`;
+
+            }
+        }
+
+        run();
+    </script>
+    <button type="button" class="btn btn-primary" onclick="toggleVisor()">Toggle Visor</button><br><br>
+    <div id="model-status">No trained model</div>
+    <div id="testing-status"></div>
+    <button type="button" class="btn btn-primary" id="train-button" disabled onclick="train()">Train New Model</button>
+    <button type="button" class="btn btn-primary" id="test-button" disabled onclick="test()">Test Trained Model</button><br><br>
+    <button type="button" class="btn btn-primary" id="save-button" disabled onclick="save()">Save Trained Model</button>
+    <button type="button" class="btn btn-primary" id="load-button" disabled onclick="load()">Load Saved Model</button><br><br>
+    <input id="predict-input-1" placeholder="Gender F:0, M:1" /><br>
+    <input id="predict-input-2" placeholder="Age 27" /><br>
+    <input id="predict-input-3" placeholder="Salary 57000" /><br>
+    <button type="button" class="btn btn-primary" id="predict-button" disabled onclick="predict()">Predict new Data</button><br>
+    <div id="predict-output"></div>
+</body>
+
+</html>

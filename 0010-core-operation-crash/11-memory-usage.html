@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <h1>0010-memory-usage</h1>
+    <script>
+        const values = [];
+
+        for (let i = 0; i < 15; i++){
+        values[i] = Math.floor(Math.random() * 100);
+        }
+
+        const shape = [5, 3];
+
+        const a = tf.tensor2d(values, shape);
+        const b = tf.tensor2d(values, shape);
+
+        console.log(tf.memory().numTensors);
+
+        a.dispose(); //manually memory 관리
+        b.dispose();
+
+        console.log(tf.memory().numTensors);
+        
+        tf.tidy(() => { // automatic memory 관리
+            const a = tf.tensor2d(values, shape);
+            const b = tf.tensor2d(values, shape);
+            console.log(tf.memory().numTensors);
+        })
+        console.log(tf.memory().numTensors);
+
+        function createTensors(){
+            let sum = tf.tensor1d([0,0,0]);
+            let c;
+            for (let i = 0; i < 1000; i++){
+                const a = tf.tensor1d([1,2,3]);
+                const b = tf.scalar(i);
+                c = a.mul(b);
+            }
+            c.print();
+            return sum;
+        }
+        //createTensors();
+        const result = tf.tidy(createTensors);
+        result.print();
+        console.log(tf.memory().numTensors);  //--> 1
+
+    </script>
+    <h1>Number of tensors in memory:
+        <script>document.write(tf.memory().numTensors)</script>
+    </h1>
+    
+</body>
+</html>
