@@ -1,141 +1,18 @@
-<html>
-    <head>
-        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
-    </head>
-    <body>
-        <h1>Linear Regression Practice</h1>
-    <script>
-        const EPOCHS = 2
-        const HouseSalesDataset = tf.data.csv(
-            'http://127.0.0.1:8080/kc_house_data.csv', {
-                columnConfigs: {
-                    sqft_living: {
-                        isLabel: false
-                    },
-                    price: {
-                        isLabel: true
-                    }
-                },
-                configuredColumnsOnly: true
-            });
+<!DOCTYPE html>
+<html lang="en">
 
-        async function run(){
-            //csv 파일 읽기
-            console.log('** CSV file =')
-            console.log(await HouseSalesDataset.take(10).toArray());
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+    <title>Linear Regression</title>
+</head>
 
-            //시각화
-            const points = HouseSalesDataset
-                .map(({ xs, ys }) => ({
-                        x: Object.values(xs),
-                        y: Object.values(ys)
-                }));
+<body>
+    <h1>Univariate Linear Regrssion with Tensorflow.js</h1>
+    <script src="script.js"></script>
+</body>
 
-            const dataPoints = await points.toArray();
-        
-            let surface = {name: '면적 vs 가격', tab: 'Charts'}
-            tfvis.render.scatterplot(surface, {values: [dataPoints]}, 
-                        {xLabel:'면적', yLabel:'가격'});
-
-            //feature extraction and tensor 변환
-            const featureValues = dataPoints.map(p => p.x);
-            const featureTensor = tf.tensor2d(featureValues, [featureValues.length, 1]);
-            const labelValues = dataPoints.map(p => p.y);
-            const labelTensor = tf.tensor2d(labelValues, [labelValues.length, 1]);
-            
-            function minMaxScaling(tensor){
-                const min = tensor.min();
-                const max = tensor.max();
-                const normedTensor = tensor.sub(min).div(max.sub(min));
-                return {
-                    tensor: normedTensor,
-                    min,
-                    max
-                }
-            }
-
-            function denormalize(tensor, min, max){
-                return tensor.mul(max.sub(min)).add(min);
-            }
-
-            const normedFeatureTensor = minMaxScaling(featureTensor);
-            const normedLabelTensor = minMaxScaling(labelTensor);
-            
-            featureTensor.dispose();
-            labelTensor.dispose();
-
-            console.log('** normalized feature tensor = ')
-            normedFeatureTensor.tensor.print();
-            console.log('** normalized label tensor = ')
-            normedLabelTensor.tensor.print();
-
-            //normalized data 시각화
-            const normedFeatureArr = normedFeatureTensor.tensor.arraySync();
-            const normedLabelArr = normedLabelTensor.tensor.arraySync();
-            const normedPoints = []
-            for (let i = 0; i < normedFeatureArr.length; i++){
-                normedPoints.push({x: normedFeatureArr[i], y: normedLabelArr[i]})
-            }
-            surface = { name: 'Normalized - 면적 vs 가격', tab: 'Normed Data' }
-            tfvis.render.scatterplot(surface, { values: [normedPoints]},
-                { xLabel: '면적', yLabel: '가격' });
-
-            //train/test split
-            const train_size = Math.floor(normedFeatureTensor.tensor.size * 0.75);
-            const test_size = normedFeatureTensor.tensor.size - train_size;
-            const X_train = normedFeatureTensor.tensor.slice(0, train_size);
-            const y_train = normedLabelTensor.tensor.slice(0, train_size);
-            const X_test  = normedFeatureTensor.tensor.slice(train_size, test_size); 
-            const y_test  = normedLabelTensor.tensor.slice(train_size, test_size);
-
-            //model build
-            const model = tf.sequential();
-            model.add(tf.layers.dense({
-                units: 1,
-                inputShape: [1],
-                activation: 'linear'
-            }))
-            model.compile({
-                loss: 'meanSquaredError',
-                optimizer: tf.train.sgd(0.1)
-            })
-
-            model.summary()
-            //model.summary 시각화
-            tfvis.show.modelSummary({name: "model summary"}, model);
-            //layer 정보 시각화
-            const layer = model.getLayer(undefined, 0);
-            tfvis.show.layer({name: "Layer 1"}, layer);
-
-            //callback 함수
-            const {onEpochEnd, onBatchEnd } = 
-                tfvis.show.fitCallbacks(
-                    { name: 'Training Performance' }, 
-                    ['loss', 'acc', 'val_loss']
-                    )
-            const history = await model.fit(X_train, y_train,{
-                epochs: EPOCHS,
-                batchSize: 32,
-                validationSplit: 0.2,
-                callbacks: { onEpochEnd, onBatchEnd}
-                // callbacks: {
-                //     onEpochEnd: (epoch, log) => {
-                //         console.log(`Epoch ${epoch}: loss= ${log.loss}, val_loss= ${log.val_loss}`)
-                //     }
-                // }
-                });
-
-            // train, validation loss 출력
-            const trainLoss = history.history.loss.pop();
-            const validationLoss = history.history.val_loss.pop();
-            console.log(`Train Loss = ${trainLoss} \nValidation Loss = ${validationLoss}`);
-
-            // test set validation
-            const lossTensor = await model.evaluate(X_test, y_test).dataSync();
-            console.log(`Test set loss : ${parseFloat(lossTensor).toFixed(5)}`);
-        }
-        run();
-    </script>
-    </body>
 </html>

@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/toxicity"></script>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"
+    />
+    <script src="toxicity.js"></script>
+  </head>
+  <body>
+    <div style="margin-left: 50px; margin-top: 20px; font-size: 20;">
+      <label>"Enter English sentence of insult, toxity, etc !!"</label><br />
+      <input id="sentence" size="30" />
+      <button class="btn btn-primary" id="predict-button" onclick="predict()">
+        Predict</button
+      ><br />
+    </div>
+  </body>
+</html>

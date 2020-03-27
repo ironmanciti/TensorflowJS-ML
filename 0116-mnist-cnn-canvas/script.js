@@ -1,78 +1,33 @@
-import {MnistData} from './data.js';
-
-let canvas, ctx, predButton, clearButton;
+let ctx;
 let rawImage;
 let model;
-let pos = {x: 0, y: 0};
+let pos = { x: 0, y: 0 };
 
-function getModel(){
-  model = tf.sequential();
-  model.add(tf.layers.conv2d({inputShape: [28, 28, 1], 
-                              kernelSize: 3, filters: 8, activation: 'relu'}));
-  model.add(tf.layers.maxPooling2d({poolSize: 2}));
-  model.add(tf.layers.conv2d({kernelSize: 3, filters:16, activation: 'relu'}));
-  model.add(tf.layers.maxPooling2d({poolSize: 2}));
-  model.add(tf.layers.flatten());
-  model.add(tf.layers.dense({units: 128, activation: 'relu'}));
-  model.add(tf.layers.dense({units: 10, activation: 'softmax'}));
-
-  model.compile({optimizer: 'adam', 
-                 loss: 'categoricalCrossentropy', metrics: ['accuracy']});
-
+//저장되었던 model load
+async function getModel() {
+  model = await tf.loadLayersModel("indexeddb://my-model-1");
+  model.summary();
   return model;
 }
 
-async function train(model, data) {
-
-  const TRAIN_DATA_SIZE = 5500;
-  const TEST_DATA_SIZE = 1000;
-
-  const [trainXs, trainYs] = tf.tidy(() => {
-        const d = data.nextTrainBatch(TRAIN_DATA_SIZE);
-        return [
-              d.xs.reshape([TRAIN_DATA_SIZE, 28, 28, 1]),
-              d.labels
-        ];
-  });
-
-  const [testXs, testYs] = tf.tidy(() => {
-    const d = data.nextTestBatch(TEST_DATA_SIZE);
-    return [
-          d.xs.reshape([TEST_DATA_SIZE, 28, 28, 1]),
-          d.labels
-    ];
-  });
-
-  const metrics = ['loss', 'val_loss', 'acc', 'val_acc'];
-  const container = {name: 'Model Training', styles: {height: '640px'}};
-  
-  const fitCallbacks = tfvis.show.fitCallbacks(container, metrics);
-
-  return model.fit(trainXs, trainYs, {
-        batchSize: 512, validationData: [testXs, testYs],
-        epochs: 50, shuffle: true,
-        callbacks: fitCallbacks
-  });
-
-}
-
+//mouse position
 function setPosition(e) {
   pos.x = e.clientX - 100;
   pos.y = e.clientY - 100;
 }
 
+// 손글씨 그리기
 function draw(e) {
-
   if (e.buttons != 1) return;
   ctx.beginPath();
   ctx.lineWidth = 24;
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = 'white';
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "white";
   ctx.moveTo(pos.x, pos.y);
   setPosition(e);
   ctx.lineTo(pos.x, pos.y);
   ctx.stroke();
-  rawImage.src = canvas.toDataURL('image/png');
+  rawImage.src = canvas.toDataURL("image/png");
 }
 
 function predict() {
@@ -83,34 +38,32 @@ function predict() {
   const pIndex = tf.argMax(prediction, 1).dataSync();
   alert(pIndex);
 }
-
+//canvas 초기화
 function erase() {
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, 280, 280);
 }
-
+//event listner 생성
 function init() {
-  canvas = document.getElementById("canvas");
+  const canvas = document.getElementById("canvas");
   rawImage = document.getElementById("canvasimg");
   ctx = canvas.getContext("2d");
   erase();
+
   canvas.addEventListener("mousemove", draw);
   canvas.addEventListener("mousedown", setPosition);
   canvas.addEventListener("mouseenter", setPosition);
-  predButton = document.getElementById("pb");
+
+  const predButton = document.getElementById("pb");
   predButton.addEventListener("click", predict);
-  clearButton = document.getElementById("cb");
-  clearButton.addEventListener("click", erase)
+  const clearButton = document.getElementById("cb");
+  clearButton.addEventListener("click", erase);
 }
 
 async function run() {
-  const data = new MnistData();
-  await data.load();
   model = getModel();
-  tfvis.show.modelSummary({name: 'Model Architecture'}, model);
-  await train(model, data);
   init();
-  alert('훈련 종료 !, 손글씨를 작성하여 분류해 보세요 !');
+  alert("model ready !!, 손글씨를 작성하여 인식시켜 보세요 !");
 }
 
-document.addEventListener('DOMContentLoaded', run);
+document.addEventListener("DOMContentLoaded", run);

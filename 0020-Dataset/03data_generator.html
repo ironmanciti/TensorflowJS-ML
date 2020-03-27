@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+</head>
+
+<body>
+    <h1>0030-data-generator</h1>
+    <script>
+        // 1. iterator factory 함수 이용
+        async function run1() {
+            function makeIterator() {
+                const numElements = 10;
+                let index = 0;
+
+                const iterator = {
+                    next: () => {
+                        let result;
+                        if (index < numElements) {
+                            result = { value: index, done: false };
+                            index++;
+                            return result;
+                        }
+                        return { value: index, done: true };
+                    }
+                };
+                return iterator;
+            }
+
+            const ds = tf.data.generator(makeIterator);
+            await ds.forEachAsync(e => console.log(e));
+        }
+
+        run1();
+
+        // 2. generator 이용
+        // async function run2() {
+
+        //     function* dataGenerator() {
+        //         const numElements = 10;
+        //         let index = 0;
+        //         while (index < numElements) {
+        //             const x = index;
+        //             index++;
+        //             yield x;
+        //         }
+        //     }
+
+        //     const ds = tf.data.generator(dataGenerator);
+        //     await ds.forEachAsync(e => console.log(e));
+        // }
+        // run2();
+
+    </script>
+</body>
+
+</html>
