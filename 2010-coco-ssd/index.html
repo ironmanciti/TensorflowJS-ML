@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Multiple object detection using pre trained model in TensorFlow.js</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <link rel="stylesheet" href="style.css">
+  </head>  
+  <body>
+    <h1>pre-trained Tensorflow.js model 을 이용한 multiple object detection</h1>
+    <p>model 이 load 되고 webcam button 이 활성화될 때 까지 기다리세요.</p>
+    <p>webcam 가까이에 물건을 가져가면 real-time 객체 감지가 됩니다. webcam 접근 허용여부를 물으면 accept 하세요.</p>
+    <br>
+    <div id="message"></div> 
+    <br>
+    <div id="liveView" class="camView">
+        <video id="webcam" autoplay width="640" height="480"></video>
+    </div>
+    <script src="script.js" defer></script>
+  </body>
+</html>
+

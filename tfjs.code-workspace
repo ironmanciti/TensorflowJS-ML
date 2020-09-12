@@ -1,0 +1,16 @@
+{
+	"folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "../TensorflowJS_othres"
+        },
+        {
+            "path": "../Teachable ML"
+        }
+    ],
+    "settings": {
+        "liveServer.settings.multiRootWorkspaceName": "TensorflowJS-ML"
+    }
+}

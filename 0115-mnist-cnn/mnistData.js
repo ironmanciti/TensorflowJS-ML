@@ -7,19 +7,15 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 추가적인 comment by Y.J.Oh
  * =============================================================================
  */
 
-const IMAGE_SIZE = 784;
-const NUM_CLASSES = 10;
-const NUM_DATASET_ELEMENTS = 65000;
+const IMAGE_SIZE = 784;   //28*28 - image 크기
+const NUM_CLASSES = 10;   //0-9, label categories
+const NUM_DATASET_ELEMENTS = 65000;  // total image 갯수
 
-const TRAIN_TEST_RATIO = 5 / 6;
+const TRAIN_TEST_RATIO = 5 / 6;      //train, test set 비율
 
 const NUM_TRAIN_ELEMENTS = Math.floor(TRAIN_TEST_RATIO * NUM_DATASET_ELEMENTS);
 const NUM_TEST_ELEMENTS = NUM_DATASET_ELEMENTS - NUM_TRAIN_ELEMENTS;
@@ -44,21 +40,22 @@ export class MnistData {
     this.shuffledTestIndex = 0;
   }
 
+  // MNIST sprited image 와 label data 를 비동기적으로 loading
   async load() {
-    // Make a request for the MNIST sprited image.
-    const img = new Image();
-    const canvas = document.createElement('canvas');
+    //pixel array 에 access 할 수 있도록 DOM element 생성
+    const img = new Image();   
+    const canvas = document.createElement('canvas');  //DOM element 생성
     const ctx = canvas.getContext('2d');
     const imgRequest = new Promise((resolve, reject) => {
       img.crossOrigin = '';
       img.onload = () => {
-        img.width = img.naturalWidth;
+        img.width = img.naturalWidth;  
         img.height = img.naturalHeight;
-
+        
         const datasetBytesBuffer =
-            new ArrayBuffer(NUM_DATASET_ELEMENTS * IMAGE_SIZE * 4);
+            new ArrayBuffer(NUM_DATASET_ELEMENTS * IMAGE_SIZE * 4); //4:channel(RGBA)
 
-        const chunkSize = 5000;
+        const chunkSize = 5000;  //한번에 너무 많은 data 를 memory 에 올리지 않기 위한 size
         canvas.width = img.width;
         canvas.height = chunkSize;
 
@@ -75,14 +72,14 @@ export class MnistData {
           for (let j = 0; j < imageData.data.length / 4; j++) {
             // All channels hold an equal value since the image is grayscale, so
             // just read the red channel.
-            datasetBytesView[j] = imageData.data[j * 4] / 255;
+            datasetBytesView[j] = imageData.data[j * 4] / 255;  //scaling
           }
         }
         this.datasetImages = new Float32Array(datasetBytesBuffer);
 
         resolve();
       };
-      img.src = MNIST_IMAGES_SPRITE_PATH;
+      img.src = MNIST_IMAGES_SPRITE_PATH;  //data loading 시작
     });
 
     const labelsRequest = fetch(MNIST_LABELS_PATH);
@@ -106,6 +103,7 @@ export class MnistData {
         this.datasetLabels.slice(NUM_CLASSES * NUM_TRAIN_ELEMENTS);
   }
 
+  //next training batch 를 load
   nextTrainBatch(batchSize) {
     return this.nextBatch(
         batchSize, [this.trainImages, this.trainLabels], () => {
@@ -115,6 +113,7 @@ export class MnistData {
         });
   }
 
+  //next test batch 를 load
   nextTestBatch(batchSize) {
     return this.nextBatch(batchSize, [this.testImages, this.testLabels], () => {
       this.shuffledTestIndex =
@@ -123,6 +122,7 @@ export class MnistData {
     });
   }
 
+  //next batch 를 반환하는 generic function
   nextBatch(batchSize, data, index) {
     const batchImagesArray = new Float32Array(batchSize * IMAGE_SIZE);
     const batchLabelsArray = new Uint8Array(batchSize * NUM_CLASSES);

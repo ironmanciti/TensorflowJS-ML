@@ -1,15 +1,15 @@
 //scatterplot
-const series1 = Array(100).fill(0)
-    .map(y => Math.random() * 100 - Math.random() * 50)
-    .map((y, x) => ({ x, y, }));
+//toy data
+const series1 = []
+const series2 = []
 
-const series2 = Array(100).fill(0)
-    .map((y, i) => i + Math.random() * 5)
-    .map((y, x) => ({ x, y, }));
+for (let i=0; i<100; i++){
+    series1.push({x: i, y: Math.random() * 100 - Math.random() * 50});
+    series2.push({x: i, y: i})
+}
 
 const surface = { name: 'Scatter Plot', tab: 'Charts' };
-const series = ['Random', 'Linear'];
-tfvis.render.scatterplot(surface, { values: [series1, series2], series })
-
-
+tfvis.render.scatterplot(surface, { 
+            values: [series1, series2], 
+            series:  ['Random', 'Linear']})
 
