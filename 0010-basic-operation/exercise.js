@@ -21,3 +21,5 @@
 // tf.tensor1d([1,2,3]).add(tf.tensor2d([[1,1,1]])).print();
 // //broadcasting
 // tf.tensor1d([1,2,3]).add(tf.tensor2d([[1], [1], [1]])).print();
+
+

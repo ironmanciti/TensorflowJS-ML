@@ -5,10 +5,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"> </script>
   </head>
   <body>
-    <img id="img" src="./images/banana.jpg" width=227 height=227/>
-    <!-- <video autoplay playesinline muted id="webcam" width=227 height=227></video> -->
-    <div id="prediction"></div>
-    <script src="mobilenet.js"></script>
-    <!-- <script src="mobilenet_webcam.js"></script> -->
+    <h1>MobileNet 전이학습</h1>
+    <img id="img" src="./images/banana.jpg" width=227 height=227 />
+    <div id="outp""></div><br><br>
+    <video autoplay playesinline muted id="webcam" width=227 height=227></video>
+    <div id="predictions"></div>
+    <script src="pretrain-script.js"></script>
   </body>
 </html>
+

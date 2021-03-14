@@ -25,12 +25,6 @@
 // //3d tensor of 2X3X2
 // tf.tensor3d([1,2,3,4,5,6,7,8,8,10,11,12], [2,3,2]).print(true);
 
-// //Variables
-// const vtense = tf.variable(tf.tensor([1,2,3,4]));
-// vtense.print();
-// vtense.assign(tf.tensor([3,4,5,6]));
-// vtense.print();
-
 // // scalar 
 // tf.scalar(4).print();
 
@@ -64,15 +58,23 @@
 // console.log(a.size);
 // console.log(a.dtype);
 
-// // Matrix Multiplication
-// a = tf.tensor2d([1, 2, 3], [1, 3]);
-// b = tf.tensor2d([1, 2, 3, 4, 5, 6], [3, 2])
-// console.log(a.shape);
-// console.log(b.shape);
+// Matrix Multiplication
+// a = tf.tensor2d([[1, 2]]);
+// b = tf.tensor2d([[1, 2], [3, 4]])
+// a.print(true);
+// b.print(true)
 
 // a.matMul(b).print(); // or tf.matMul(a, b)
 
-// //split data
+// //전치 행렬
+// a = tf.tensor2d([1, 2, 3, 4, 5, 6], [2, 3]);
+// a.transpose().print();
+
+// 형상 변경
+// a = tf.tensor1d([1, 2, 3, 4]);
+// a.reshape([2, 2]).print();
+
+// //data 분할
 // //tf.split(x, [number1, number2, ...])
 // const x = tf.tensor2d([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [5, 2]);
 // x.print();
@@ -86,31 +88,30 @@
 // min.print()
 // max.print()
 
-// scaled = X_train.sub(min).div(min.sub(max))
+// scaled = X_train.sub(min).div(max.sub(min))
 // scaled.print()
 
-// //concatenate
-// let a = tf.tensor2d([[1, 2, 3, 4], [5, 4, 3, 2]]);
-// let c = tf.tensor2d([[3, 4, 5, 6], [5, 6, 7, 8]]);
-// a.print();
-// c.print();
-// tf.concat([a, c], axis = 1).print();
-
+// //Variables
+// const vtense = tf.variable(tf.tensor([1,2,3,4]));
+// vtense.print();
+// vtense.assign(tf.tensor([3,4,5,6]));
+// vtense.print();
 
 // //Promise
-//비동기식 처리
+// //비동기식 처리 - callback hell
 // window.setTimeout(() => {
 //     console.log('setTimeout called')
 // }, 1000);
 
 // console.log('After setTimeout');
 
-// 동기식 처리 (Promise)
+//동기식 처리 (Promise) - ES6
 // function _promise() {
 //     return new Promise((resolve, reject) => {
 //         window.setTimeout(() => {
 //             console.log('setTimeout called')
-//             resolve();
+//             //resolve(100);
+//             reject(200);
 //         }, 1000)
 //     })
 // }
@@ -118,41 +119,43 @@
 // _promise().then((result) => {
 //     console.log("After setTimeout ", result);
 // }).catch(e => {
-//     console.log(e);
+//     console.log("Failed", e);
 // })
 
-// 동기식 처리 (async, await)
-// async function run(){
-//     await new Promise((resolve, reject) => {
+// //동기식 처리 (async, await) - ES8
+// function foo(){
+//     return new Promise((resolve, reject) => {
 //         window.setTimeout(() => {
-//             console.log('setTimeout called')
-//             resolve(1);
-//         }, 1000)
+//             console.log('setTimeout called');
+//             resolve(100);
+//         }, 1000);
+//     })
+// }
+
+// async function makeRequest() {
+//     await foo().then(result => {
+//         console.log(result);
 //     });
-//     console.log('After setTimeout')
+//     console.log('foo called')
 // }
+// makeRequest();
 
-// run();
-
-// tf.Tensor.data - tf.Tensor 로부터 비동기식 download
+// //tf.Tensor.data - tf.Tensor 로부터 비동기식 download
 // const scaled = tf.tensor1d([1, 2, 3])
-// scaled.data().then((result) => {
-//     console.log("Asynchronous Promise returned : ", result);
+// scaled.data().then(result => {
+//     console.log("비동기식 Promise returned : ", result);
 // })
-// console.log("synchronous First : ", scaled.dataSync());
 
-// 동기식으로 처리
+// console.log("동기식 함수 먼저 실행: ", scaled.dataSync());
+
+//동기식으로 처리
+// const scaled = tf.tensor1d([1, 2, 3])
 // async function run() {
-//     const data = await scaled.data();
+//     const data = await scaled.array();
 //     console.log(data);
-//     console.log("data download 완료 후 동기식으로 수행");
+//     return data;
 // }
 
-// run();
-
-// //aync function returns promise
-// run().then(() => {
-//     console.log('success');
-// }).catch((e) => {
-//     console.log(e);
-// })
+// run().then((data) => {
+//     console.log("동기식으로 수행", data, scaled.arraySync());
+// });

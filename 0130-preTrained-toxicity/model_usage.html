@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/toxicity"></script>
+    <title>Document</title>
+    <script>
+        //예측 신뢰 최소 임계값
+        const threshold = 0.9;
+        //모델로드
+        toxicity.load(threshold).then(model => {
+            const sentences = ['you suck'];
+            model.classify(sentences).then(predictions => {
+            //`predictions` 는 각 입력에 대한 확률과 함께 
+            //'match'의 최종 예측('true'또는 'false')을 포함하는 배열
+            // 예측이 threshold를 초과하지 않는 경우 'match'는 'null'
+            console.log(predictions);
+                /*{
+                "label": "insult",
+                "results": [{
+                "probabilities": [0.08124706149101257, 0.9187529683113098],
+                "match": true
+                }]
+                },*/
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Toxicity Model Usage</h1>
+</body>
+</html>

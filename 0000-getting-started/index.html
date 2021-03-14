@@ -1,16 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
-<script>
-    //tensorflow.js code here
-    const a = tf.tensor3d([[[1,2], [3,4]], [[5,6], [7,8]]]);
-    console.log(a)
-</script>
+    <script>
+        async function doTraining(model) {
+            const history =
+                await model.fit(xs, ys,
+                    {
+                        epochs: 500,
+                        callbacks: {
+                            onEpochEnd: async (epoch, logs) => {
+                                console.log("Epoch:"
+                                    + epoch
+                                    + "Loss:"
+                                    + logs.loss);
+                            }
+                        }
+                    });
+        }
+
+        const model = tf.sequential()
+        model.add(tf.layers.dense({ units: 1, inputShape: [1] }));
+        model.compile({ loss: 'meanSquaredError', optimizer: "sgd" })
+        model.summary()
+        //y = 2*x + 1
+        const xs = tf.tensor2d([-1.0, 0.0, 1.0, 2.0, 3.0, 4.0], [6, 1])
+        const ys = tf.tensor2d([-1.0, 1.0, 3.0, 5.0, 7.0, 9.0], [6, 1])
+
+        doTraining(model).then(() => {
+            alert(model.predict(tf.tensor2d([10], [1, 1])));
+        })
+
+    </script>
+    <title>Document</title>
 </head>
+
 <body>
-    <h1>0000-getting-started</h1>
+    <h1>First Model</h1>
+    <h3>기본 개념 check</h3>
+    <ol>
+        <li>synchronous / asynchronous</li>
+        <li>what is model ?</li>
+        <li>model.fit()</li>
+        <li>epoch</li>
+        <li>model.compile()</li>
+        <li>loss / meanSquaredError</li>
+        <li>sgd(Stochastic Gradient Descent)</li>
+        <li>tf.tensor2d</li>
+        <li>mode.predict()</li>
+    </ol>
 </body>
+
 </html>
 
 

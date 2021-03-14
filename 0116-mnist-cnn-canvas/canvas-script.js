@@ -34,7 +34,7 @@ function draw(e) {
 
 function predict() {
   //gray image 이므로 channel 1
-  const raw = tf.browser.fromPixels(rawImage, 1); 
+  const raw = tf.browser.fromPixels(rawImage, 1); //(pixels, numChannels)
   //[280, 280, 1] image resize -> [28, 28, 1] (선형보간법)
   const resized = tf.image.resizeBilinear(raw, [28, 28]);
   const tensor = resized.expandDims(0);   //[1, 28, 28, 1] 
@@ -56,7 +56,6 @@ function init() {
 
   canvas.addEventListener("mousemove", draw);
   canvas.addEventListener("mousedown", setPosition);
-  canvas.addEventListener("mouseenter", setPosition);
 
   const predButton = document.getElementById("pb");
   predButton.addEventListener("click", predict);
@@ -65,7 +64,7 @@ function init() {
 }
 
 async function run() {
-  model = getModel();
+  model = await getModel();
   init();
   alert("model ready !!, 손글씨를 작성하여 인식시켜 보세요 !");
 }

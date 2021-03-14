@@ -8,9 +8,24 @@
         },
         {
             "path": "../Teachable ML"
+        },
+        {
+            "path": "../../Desktop/Tensorflow JS Practice"
         }
     ],
     "settings": {
         "liveServer.settings.multiRootWorkspaceName": "TensorflowJS-ML"
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "type": "pwa-chrome",
+                "request": "launch",
+                "name": "Launch Chrome against localhost",
+                "url": "http://localhost:5500",
+                "webRoot": "${workspaceFolder}\\0120-preTrained-MobileNet\\"
+            }
+        ]
     }
 }

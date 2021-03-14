@@ -1,10 +1,11 @@
+// array of objects 로부터 Dataset 생성
 async function run1(){
     const myArray = [
         {xs: [1, 0, 9], ys: 10},
         {xs: [5, 1, 3], ys: 11},
         {xs: [1, 1, 9], ys: 12}
     ]
-    // array of objects 로부터 Dataset 생성
+    
     const myFirstData = tf.data.array(myArray);
     console.log(myFirstData)
     await myFirstData.forEachAsync(e => console.log(e));
@@ -24,8 +25,11 @@ const HouseSalesDataset = tf.data.csv(
 });
 
 async function run2(){
-    await HouseSalesDataset.take(10).forEachAsync(e => console.log(e));
+    const house = await HouseSalesDataset.take(10).toArray();
+    console.log(house);
 }
 
 //run1();
 run2();
+
+

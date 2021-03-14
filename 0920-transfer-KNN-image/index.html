@@ -7,16 +7,28 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
   <!-- Load KNN Classifier -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
+  <style>
+    .box {
+    display: flex;
+    align-items: stretch;
+    font-weight: bold;
+    font-size: 40;
+    }
+  </style>
 </head>
 
 <body>
-  <img id='class0' src='./images/puffin.jpg ' width=280 height=280/>
-  <img id='class1' src='./images/banana.jpg'  width=280 height=280/>
-  <img id='class2' src='./images/bird.png'  width=280 height=280/>
-  <img id='test' src='./images/banana.jpg'  width=280 height=280/>
+  <div class="box">
+    <div>Class 0<img id='class0' src='./images/puffin.jpg ' width=280 height=280 /></div>
+    <div>Calsss 1<img id='class1' src='./images/banana.jpg' width=280 height=280 /></div>
+    <div>Clsss 2<img id='class2' src='./images/bird.png' width=280 height=280 /></div>
+  </div>
+  <br><br>
+  <div class="box">Test<img id='test' src='./images/puffin2.jpg' width=280 height=280 /></div>
+  
 </body>
 <!-- Place your code in the script tag below. You can also use an external .js file -->
-<script src="script.js"></script>
+<script src="knn-img-script.js"></script>
 
 </html>
 
