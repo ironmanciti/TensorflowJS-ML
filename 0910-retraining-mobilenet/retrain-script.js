@@ -6,14 +6,6 @@ let rockSamples = 0;
 let paperSamples = 0;
 let scissorsSamples = 0;
 
-async function loadMobilenet(){
-    const mobilenet = await 
-        tf.loadLayersModel('https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json');
-    const layer = mobilenet.getLayer('conv_pw_13_relu');
-    //layer.output 이후 layer들은 ignore하는 new model 반환
-    return tf.model({inputs: mobilenet.inputs, outputs: layer.output});
-}
-
 function handleButton(elem){
     switch(elem.id){
         case "0":
@@ -80,18 +72,17 @@ async function predict() {
     var predictionText = "";
     switch(classId){
 		case 0:
-			predictionText = "I see Rock";
+			predictionText = "바위 입니다.";
 			break;
 		case 1:
-			predictionText = "I see Paper";
+			predictionText = "보자기 입니다.";
 			break;
 		case 2:
-			predictionText = "I see Scissors";
+			predictionText = "가위 입니다.";
 			break;
 	}
 	document.getElementById("prediction").innerText = predictionText;
 			
-    
     predictedClass.dispose();
     await tf.nextFrame();
   }
@@ -115,7 +106,12 @@ function stopPredicting(){
 
 async function init(){
     await webcam.setup()
-    mobilenet = await loadMobilenet();
+    mobilenet = await 
+        tf.loadLayersModel('https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json');
+    const layer = mobilenet.getLayer('conv_pw_13_relu');
+
+    mobilenet = tf.model({inputs: mobilenet.inputs, outputs: layer.output});
+
     tf.tidy(() => mobilenet.predict(webcam.capture())); //tensor capture하여 mobilenet전달
 }
 

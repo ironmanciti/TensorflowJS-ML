@@ -1,25 +1,25 @@
-let model;
+let mobileModel;
 let img;
+let webcamIterator;
 
-const classifier = knnClassifier.create();
+const knnModel = knnClassifier.create();
 
 // Webcam 연결
 const videoElement = document.getElementById('webcam');
-let webcamIterator;
 
 // 웹캠으로부터 읽어들인 이미지를 특정 class 로 지정
 const addExample = async (classId) => {
   img = await webcamIterator.capture();
   // MobileNet 의 conv_preds layer 의 logit 을 KNN 의 example 로 추가
-  const logit = model.infer(img, 'conv_preds');
-  classifier.addExample(logit, classId);
+  const logit = mobileModel.infer(img, 'conv_preds');
+  knnModel.addExample(logit, classId);
   img.dispose();
 };
   
 async function app() {
-  // mobileNet model 로딩
-  model = await mobilenet.load();
-  console.log('Sucessfully loaded model');
+  // mobileNet mobileModel 로딩
+  mobileModel = await mobilenet.load();
+  console.log('Sucessfully loaded mobileModel');
 
   // Webcam 연결
   webcamIterator = await tf.data.webcam(videoElement);
@@ -32,20 +32,20 @@ async function app() {
   while (true) {
     img = await webcamIterator.capture();
     
-    if (classifier.getNumClasses() > 0) {
+    if (knnModel.getNumClasses() > 0) {
       // Webcam 에서 받은 image 의 MobleNet logit 을 KNN 의 prediction 에 입력
-      const activation = model.infer(img, 'conv_preds');
+      const logits = mobileModel.infer(img, 'conv_preds');
 
       // K-nearest predictio. default=3. {label, classIndex, confidence} 를 반환
-      const result = await classifier.predictClass(activation);
+      const result = await knnModel.predictClass(logits);
 
       // KNN 이 분류한 class 를 browser 에 표시
-      const classes = ['A', 'B', 'C'];
+      const classes = ['class-a', 'class-b', 'class-c'];
       document.getElementById('console').innerText = `
         prediction: ${classes[result.classIndex]}\n
         probability: ${result.confidences[result.classIndex]}
       `;
-      activation.dispose();
+      logits.dispose();
     }
 
     await tf.nextFrame();

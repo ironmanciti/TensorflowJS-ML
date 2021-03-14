@@ -1,15 +1,17 @@
 <html>
   <head>
-    <!-- Load the latest version of TensorFlow.js -->
-    <script crossOrigi src="https://unpkg.com/@tensorflow/tfjs"></script>
-    <script crossOrigi src="https://unpkg.com/@tensorflow-models/mobilenet"></script>
-    <script crossOrigi src="https://unpkg.com/@tensorflow-models/knn-classifier"></script>
+    <!-- Load TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <!-- Load MobileNet -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <!-- Load KNN Classifier -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
   </head>
   <body>
     <h1>pre-trained MobileNet 과 KNN 분류기를 이용한 image 분류</h1>
-    <div id="console"></div>
+    <div id="console"></div><br><br>
     <!-- Add an image that we will use to test -->
-    <video autoplay playsinline muted id="webcam" width="224" height="224"></video>
+    <video autoplay playsinline muted id="webcam" width="224" height="224"></video><br><br>
     <button id="class-a">Add class-a</button>
     <button id="class-b">Add class-b</button>
     <button id="class-c">Add class-c</button>
