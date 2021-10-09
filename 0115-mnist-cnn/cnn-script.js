@@ -2,14 +2,15 @@ import {MnistData} from "./mnistData.js";
 const EPOCHS = 5;
 
 //model 정의 - tf.sequential layer API 를 이용하여 CNN 구축
-function model_build(){
+function get_model(){
     const model = tf.sequential();
     model.add(tf.layers.conv2d({
         inputShape: [28, 28, 1],
         kernelSize: 5,
-        filters: 6,
+        filters: 8,
         strides: 1,
-        activation: 'relu'
+        activation: 'relu',
+        kernelInitializer: 'varianceScaling'
     }));
     model.add(tf.layers.maxPooling2d({
         poolSize: [2, 2],
@@ -19,7 +20,8 @@ function model_build(){
         kernelSize: 5,
         filters: 16,
         strides: 1,
-        activation: 'relu'
+        activation: 'relu',
+        kernelInitializer: 'varianceScaling'
     }));
     model.add(tf.layers.maxPooling2d({
         poolSize: [2, 2],
@@ -27,15 +29,8 @@ function model_build(){
     }));
     model.add(tf.layers.flatten());
     model.add(tf.layers.dense({
-        units: 120,
-        activation: 'relu'
-    }));
-    model.add(tf.layers.dense({
-        units: 80,
-        activation: 'relu'
-    }));
-    model.add(tf.layers.dense({
         units: 10,
+        kernelInitializer: 'varianceScaling',
         activation: 'softmax'
     }));
     model.compile({
@@ -47,9 +42,15 @@ function model_build(){
 }
 
 async function train(model, data){
+    const metrics = ['loss', 'val_loss', 'acc', 'val_acc'];
+    const container = {
+        name: 'Model Training', tab: 'Model', styles: { height: '1000px' }
+    };
+    const fitCallbacks = tfvis.show.fitCallbacks(container, metrics);
+
     const BATCH_SIZE = 512;
-    const TRAIN_SIZE = 55000;
-    const TEST_SIZE  = 10000;
+    const TRAIN_SIZE = 5500;
+    const TEST_SIZE  = 1000;
     //data 불러오기
     const [X_train, y_train] = tf.tidy(() => {
         const d = data.nextTrainBatch(TRAIN_SIZE);
@@ -60,40 +61,49 @@ async function train(model, data){
         return [d.xs.reshape([TEST_SIZE, 28, 28, 1]), d.labels];
     });
 
-    const surface = {name: 'history', tab: 'training'};
-    const history = [];
-    console.log("EPOCHS:", EPOCHS);
-    await model.fit(X_train, y_train, {
+    return model.fit(X_train, y_train, {
         batchSize: BATCH_SIZE,
         validationData: [X_test, y_test],
-        epochs: EPOCHS,
-        callbacks: {
-            onBatchEnd: (epoch, log) => {
-                history.push(log);
-                tfvis.show.history(surface, history,
-                    ['loss', 'acc']);
-            }
-        }
+        epochs: 10,
+        shuffle: true,
+        callback: fitCallbacks
     })
 }
 
-async function showAccuracy(labels, preds){
-    const classAccuracy = await tfvis.metrics.perClassAccuracy(labels, preds);
-    const surface = {name: 'Accuracy', tab: 'Evaluation'}
-    await tfvis.show.perClassAccuracy(surface, classAccuracy);
+const classNames = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+
+function doPrediction(model, data, testDataSize = 500) {
+  const testData = data.nextTestBatch(testDataSize);
+  const testxs = testData.xs.reshape([testDataSize, 28, 28, 1]);
+  const labels = testData.labels.argMax(-1);
+
+  const preds = model.predict(testxs).argMax(-1);
+
+  testxs.dispose();
+  return [preds, labels];
 }
 
-async function showConfusion(labels, preds){
+async function showAccuracy(model, data){
+    const [preds, labels] = doPrediction(model, data);
+    const classAccuracy = await tfvis.metrics.perClassAccuracy(labels, preds);
+    const container = {name: 'Accuracy', tab: 'Evaluation'}
+    await tfvis.show.perClassAccuracy(container, classAccuracy);
+    labels.dispose()
+}
+
+async function showConfusion(model, data){
+    const [preds, labels] = doPrediction(model, data);
     const confusionMatrix = await tfvis.metrics.confusionMatrix(labels, preds);
-    const surface = {name: 'Confusion Matrix', tab: 'Evaluation'}
-    await tfvis.render.confusionMatrix(surface, { values: confusionMatrix});
+    const container = {name: 'Confusion Matrix', tab: 'Evaluation'}
+    await tfvis.render.confusionMatrix(container, { values: confusionMatrix});
+    labels.dispose();
 }
 
 async function run(){
     const data = new MnistData();
     await data.load();
 
-    const model = model_build();
+    const model = get_model();
     await tfvis.show.modelSummary({
         name: 'Model Summary',
         tab: 'Model'
@@ -102,20 +112,8 @@ async function run(){
     await train(model, data);
     await model.save('indexeddb://my-model-1');
 
-    //Evaluation
-    const testSize = 100;
-    const testData = data.nextTestBatch(testSize);
-    const testXs = testData.xs.reshape([testSize, 28, 28, 1]);
-    const labels = testData.labels.argMax(1);
-    const preds = model.predict(testXs).argMax(1);
-
-    testXs.dispose();
-
-    await showAccuracy(labels, preds);
-    await showConfusion(labels, preds);
-
-    labels.dispose();
-    preds.dispose();
+    await showAccuracy(model, data);
+    await showConfusion(model, data);
 }
 
 document.addEventListener("DOMContentLoaded", run);

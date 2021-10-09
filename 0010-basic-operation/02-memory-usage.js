@@ -16,6 +16,7 @@ b.dispose();
 console.log(tf.memory().numTensors);
 
 // automatic memory 관리
+// 함수가 반환하지 않는 모든 tf.Tensor를 정리
 tf.tidy(() => { 
     const a = tf.tensor2d(values, [5, 3]);
     const b = tf.tensor2d(values, [5, 3]);
@@ -24,5 +25,8 @@ tf.tidy(() => {
 console.log(tf.memory().numTensors);
 
 document.write(tf.memory().numTensors)
+
+//사용중인 backend 찾기
+console.log(tf.getBackend());
 
 

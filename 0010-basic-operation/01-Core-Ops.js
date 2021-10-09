@@ -10,9 +10,9 @@
 // tense4.print();
 // tense5.print();
 
-// //2d tensor
+//2d tensor
 // const verbose = true;
-// tf.tensor2d([1, 2, 3, 4], [2, 2]).print(verbose);
+// tf.tensor2d([1, 2, 3, 4], [2, 2], 'int32').print(verbose);
 
 // let a = tf.tensor2d([[1.0, 2.0, 3.0], [10.0, 20.0, 30.0]]);
 // tf.print(["a = tensor / 2d array ", a]);
@@ -28,10 +28,11 @@
 // // scalar 
 // tf.scalar(4).print();
 
-// //operations
-// const d = tf.tensor2d([[1.0, 2.0],[3.0, 4.0]]);
-// d.square().print();
-// console.log(d.toString() + '\n' + d.square().toString());
+// //제곱
+// const x = tf.tensor2d([[1.0, 2.0],[3.0, 4.0]]);
+// const y = x.square();
+// y.print();
+// console.log(x.toString() + '\n' + x.square().toString());
 
 // // add, sub, mul, div
 // const e = tf.tensor2d([[1.0, 2.0], [3.0, 4.0]]);
@@ -74,8 +75,8 @@
 // a = tf.tensor1d([1, 2, 3, 4]);
 // a.reshape([2, 2]).print();
 
-// //data 분할
-// //tf.split(x, [number1, number2, ...])
+//data 분할
+//tf.split(x, [number1, number2, ...])
 // const x = tf.tensor2d([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [5, 2]);
 // x.print();
 // const [X_train, X_test] = tf.split(x, [3, 2]);
@@ -97,32 +98,25 @@
 // vtense.assign(tf.tensor([3,4,5,6]));
 // vtense.print();
 
-// //Promise
-// //비동기식 처리 - callback hell
+// const a = function(x){
+//     console.log(x);
+// }
+// a('aa');
+
+// const b = (x) => {
+//     console.log(x);
+// }
+// b('cc');
+
+//Promise
+//비동기식 처리 - callback hell 해결
 // window.setTimeout(() => {
 //     console.log('setTimeout called')
-// }, 1000);
+// }, 3000);
 
 // console.log('After setTimeout');
 
-//동기식 처리 (Promise) - ES6
-// function _promise() {
-//     return new Promise((resolve, reject) => {
-//         window.setTimeout(() => {
-//             console.log('setTimeout called')
-//             //resolve(100);
-//             reject(200);
-//         }, 1000)
-//     })
-// }
-
-// _promise().then((result) => {
-//     console.log("After setTimeout ", result);
-// }).catch(e => {
-//     console.log("Failed", e);
-// })
-
-// //동기식 처리 (async, await) - ES8
+// //동기식 처리 (async, await 문법 이용) - ES8
 // function foo(){
 //     return new Promise((resolve, reject) => {
 //         window.setTimeout(() => {
@@ -140,22 +134,14 @@
 // }
 // makeRequest();
 
-// //tf.Tensor.data - tf.Tensor 로부터 비동기식 download
-// const scaled = tf.tensor1d([1, 2, 3])
-// scaled.data().then(result => {
-//     console.log("비동기식 Promise returned : ", result);
-// })
+//Tensor에서 비동기 method로 값 가져오기
+//Tensor.array() or Tensor.data() method 이용(promise 반환)
+const a = tf.tensor([[1, 2], [3, 4]]);
+a.array().then(array => console.log(array));
+a.data().then(data => console.log(data));
 
-// console.log("동기식 함수 먼저 실행: ", scaled.dataSync());
-
-//동기식으로 처리
-// const scaled = tf.tensor1d([1, 2, 3])
-// async function run() {
-//     const data = await scaled.array();
-//     console.log(data);
-//     return data;
-// }
-
-// run().then((data) => {
-//     console.log("동기식으로 수행", data, scaled.arraySync());
-// });
+//Tensor에서 동기식 method로 값 가져오기
+//Tensor.arraySync() or Tensor.dataSync() method 이용
+//UI thread차단 문제를 일으킬 수 있으므로 운영 application에서는 비동기식 선호
+console.log(a.arraySync());
+console.log(a.dataSync());

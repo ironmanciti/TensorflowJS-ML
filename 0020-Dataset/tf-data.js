@@ -7,7 +7,6 @@ async function run1(){
     ]
     
     const myFirstData = tf.data.array(myArray);
-    console.log(myFirstData)
     await myFirstData.forEachAsync(e => console.log(e));
 }
 
@@ -29,7 +28,7 @@ async function run2(){
     console.log(house);
 }
 
-//run1();
+run1();
 run2();
 
 
