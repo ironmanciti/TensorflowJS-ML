@@ -10,15 +10,7 @@ function setup() {
     // img = createImg('images/cat.jpg', imageReady);
     img = createImg('images/cat2.jpg', imageReady);
     img.hide();
-    // img.size(640, 420);
-
 }
-
-// // Change the status when the model loads.
-// function modelReady() {
-//     console.log("model Ready!")
-//     status = true;
-// }
 
 // image load 되면, object 위치 prediction
 function imageReady() {

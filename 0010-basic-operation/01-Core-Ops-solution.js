@@ -152,5 +152,6 @@
 //flatten() - Flatten a Tensor to a 1D array.
 const xs = tf.tensor([1, 2, 3, 4], [2, 2]);
 xs.print(true);
+debugger;
 xs.flatten().print();
 xs.as1D().print();
