@@ -5,11 +5,11 @@ class RPSDataset {
 
   addExample(example, label) {
     if (this.xs == null) {
-      this.xs = tf.keep(example);
+      this.xs = example;
       this.labels.push(label);
     } else {
       const oldX = this.xs;
-      this.xs = tf.keep(oldX.concat(example, 0));
+      this.xs = oldX.concat(example, 0);
       this.labels.push(label);
       oldX.dispose();
     }
@@ -18,9 +18,9 @@ class RPSDataset {
   encodeLabels(numClasses) {
     for (var i = 0; i < this.labels.length; i++) {
       if (this.ys == null) {
-        this.ys = tf.keep(tf.tidy(
+        this.ys = tf.tidy(
             () => {return tf.oneHot(
-                tf.tensor1d([this.labels[i]]).toInt(), numClasses)}));
+                tf.tensor1d([this.labels[i]]).toInt(), numClasses)});
       } else {
         const y = tf.tidy(
             () => {return tf.oneHot(

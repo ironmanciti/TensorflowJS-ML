@@ -4,6 +4,9 @@
 <head>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
     <script>
+        tf.backend();
+        console.log(tf.getBackend());
+
         async function doTraining(model) {
             const history =
                 await model.fit(xs, ys,

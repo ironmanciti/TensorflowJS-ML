@@ -1,23 +1,24 @@
 // Initialize the Image Classifier method with MobileNet. A callback needs to be passed.
 // Create a YOLO method
-const yolo = ml5.YOLO(modelReady);
+const yolo = ml5.YOLO(()=>(console.log('model ready...')));
 let img;
 let objects = [];
 let status;
 
 function setup() {
     createCanvas(640, 420);
+    // img = createImg('images/cat.jpg', imageReady);
     img = createImg('images/cat2.jpg', imageReady);
     img.hide();
-    img.size(640, 420);
+    // img.size(640, 420);
 
 }
 
-// Change the status when the model loads.
-function modelReady() {
-    console.log("model Ready!")
-    status = true;
-}
+// // Change the status when the model loads.
+// function modelReady() {
+//     console.log("model Ready!")
+//     status = true;
+// }
 
 // image load 되면, object 위치 prediction
 function imageReady() {
@@ -35,7 +36,7 @@ function gotResult(err, results) {
 
 function draw() {
     // unless the model is loaded, do not draw anything to canvas
-    if (status != undefined) {
+    if (yolo) {
         image(img, 0, 0)
 
         for (let i = 0; i < objects.length; i++) {
