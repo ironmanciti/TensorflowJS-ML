@@ -7,19 +7,20 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
   <!-- Load KNN Classifier -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
 </head>
 
 <body>
-  <div>Class 0<img id='class0' src='./images/puffin.jpg ' width=140 height=140 />
+  <div class="container">Class 0<img id='class0' src='./images/coffee.jpg ' width=140 height=140 />
        Class 1<img id='class1' src='./images/banana.jpg' width=140 height=140 />
        Class 2<img id='class2' src='./images/bird.png' width=140 height=140 /></div>
   <br><br>
-  Test<img id='test' src='./images/bird2.jpg' width=140 height=140 />
-  <div class="box" id="predictions"></div>
-  
+  <div class="container">Test Image</div>
+  <div class="container"><img id='test' src='./images/bird2.jpg' width=140 height=140 /></div>
+  <div class="container" class="box" id="predictions"></div>
+
+  <script src="knn-img-script.js"></script>
 </body>
-<!-- Place your code in the script tag below. You can also use an external .js file -->
-<script src="knn-img-script.js"></script>
 
 </html>
 

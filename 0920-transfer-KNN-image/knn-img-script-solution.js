@@ -1,12 +1,16 @@
 async function app() {
-    // Create the knnModel.
+    // knnModel 생성
     const knnModel = knnClassifier.create();
 
-    // Load mobilenet.
+    // mobilenet load
     const mobilenetModule = await mobilenet.load();
 
+    /*knn 분류기에 sample 추가
+    parameter: logit - mobilenet의 출력 logit, id - class Id
+    knn 분류기 train 을 위해 동일한 image sample 을 5 개씩 추가
+    */
     function add_examples(logit, id){
-        for (let i=0; i < 5; i++){
+        for (let i=0; i < 5; i++){   
             knnModel.addExample(logit, id);
         }
     }
@@ -30,9 +34,9 @@ async function app() {
     // knn prediction
     const result = await knnModel.predictClass(xlogits);
     console.log(result);
-    document.getElementById('predictions').innerText = 
-                    `\nprediction: ${result.label} \n
-                    probability: ${result.confidences[result.classIndex].toFixed(2)}`
+    document.getElementById('predictions').innerHTML = 
+                    `\nprediction: ${result.label}` + `<br>` +
+                    `probability: ${result.confidences[result.classIndex].toFixed(2)}`
 }
 
 document.addEventListener("DOMContentLoaded", app);

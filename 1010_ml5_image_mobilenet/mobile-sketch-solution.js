@@ -3,6 +3,7 @@
 let img;
 let classifier, predicted, prob;
 
+//image Classifier load
 function preload() {
   classifier = ml5.imageClassifier('MobileNet');
 }
@@ -16,9 +17,11 @@ function setup() {
 
 function draw() {
   background(255);
+  //image display
   if (img) {
     image(img, 0, 0, width, height);
   }
+  //probability display
   if (prob) {
     fill(0, 0, 0);
     textSize(20);
@@ -27,6 +30,7 @@ function draw() {
   }
 }
 
+//image file load 및 분류
 function handleFile(file) {
   console.log(file);
   if (file.type === 'image') {
@@ -37,7 +41,7 @@ function handleFile(file) {
     img = null;
   }
 }
-
+// classify callback function
 function gotResult(err, result) {
   console.log(result);
   if (err) {

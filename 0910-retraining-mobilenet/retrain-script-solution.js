@@ -1,11 +1,12 @@
 let mobilenet
 let model
 const webcam = new Webcam(document.getElementById('wc'));
-const dataset = new RPSDataset();
+const dataset = new RPSDataset();  
 let rockSamples = 0;
 let paperSamples = 0;
 let scissorsSamples = 0;
 
+//webcam image의 truncated mobilenet 출력을 training example 로 add
 function handleButton(elem){
     switch(elem.id){
         case "0":
@@ -26,9 +27,14 @@ function handleButton(elem){
     dataset.addExample(mobilenet.predict(img), label)
 }
 
+//model train
 async function train(){
+    //label들을 one-hot-encoding
     dataset.ys = null;
     dataset.encodeLabels(3)
+    // console.log(dataset.xs, dataset.ys);
+
+    //전이학습 model 생성
     model = tf.sequential({
         layers: [
             tf.layers.flatten({
@@ -42,33 +48,35 @@ async function train(){
             })
         ]
     })
-    model.summary();
+    // model.summary();
 
-    console.log(dataset.xs, dataset.ys);
-
+    //model compile 및 train
     const optimizer = tf.train.adam(0.0001);
     model.compile({optimizer:optimizer, loss: 'categoricalCrossentropy'});
-    let loss = 0;
+
     await model.fit(dataset.xs, dataset.ys, {
         epochs: 10,
         callbacks: {
-            onBachEnd: async (batch, logs) => {
-                loss = logs.loss.toFixed(5);
-                console.log('LOSS: ', loss)
+            onEpochEnd: (epoch, logs) => {
+                console.log('LOSS: ', logs.loss.toFixed(5))
             }
         }
     })
     console.log('train.. ends..');
 }
 
+//prediction loop
 async function predict() {
   while (isPredicting) {
+    //webcam image 를 이용하여 prediction
     const predictedClass = tf.tidy(() => {
       const img = webcam.capture();
       const activation = mobilenet.predict(img);
       const predictions = model.predict(activation);
       return predictions.flatten().argMax();
     });
+
+    //prediction 결과 display
     const classId = (await predictedClass.data())[0];
     let predictionText = "";
     switch(classId){
@@ -103,15 +111,15 @@ function stopPredicting(){
 	isPredicting = false;
 }
 
+//webcam 초기화, truncated mobilenet load
 async function init(){
     await webcam.setup()
     mobilenet = await 
         tf.loadLayersModel('https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json');
     const layer = mobilenet.getLayer('conv_pw_13_relu');
 
+    //truncated mobilenet model 생성
     mobilenet = tf.model({inputs: mobilenet.inputs, outputs: layer.output});
-
-    tf.tidy(() => mobilenet.predict(webcam.capture())); //tensor capture하여 mobilenet전달
 }
 
 init();

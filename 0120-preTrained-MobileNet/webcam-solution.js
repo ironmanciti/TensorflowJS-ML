@@ -1,16 +1,6 @@
 async function run(){
-    const image = document.getElementById('img');
+
     const model = await mobilenet.load();
-    console.log("model loaded");
-
-    let preds = await model.classify(image);
-    
-    console.log(preds)
-
-    for (let i=0; i<preds.length; i++){
-        document.getElementById('outp').innerHTML += "<br/>" + preds[i].className 
-        + " : " + preds[i].probability.toFixed(4); 
-    }
     
     const video = document.getElementById('webcam');
     const webcamIterator = await tf.data.webcam(video);  

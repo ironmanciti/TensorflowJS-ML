@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <!-- Load the latest version of TensorFlow.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"> </script>
+  </head>
+  <body>
+    <h1>MobileNet 전이학습</h1>
+    <!-- Add an image that we will use to test -->
+    <img id="img" crossorigin src="https://i.imgur.com/JlUvsxa.jpg" width="227" height="227" />
+    <div id="output" style="font-size:20px"></div>
+    <script>
+      const img = document.getElementById("img");
+      const outp = document.getElementById("output");
+      mobilenet.load().then(model => {
+        model.classify(img).then(predictions => {
+          console.log(predictions);
+          for (let i=0; i<predictions.length; i++){
+            outp.innerHTML += "<br/>" + predictions[i].className + " : "
+                          + predictions[i].probability.toFixed(4);
+          }
+        })
+      })
+    </script>
+    <br>
+    
+  </body>
+</html>
+
