@@ -1,5 +1,0 @@
-//scatterplot
-//toy data
-
-//rendering
-

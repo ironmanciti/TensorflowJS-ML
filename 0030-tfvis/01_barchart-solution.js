@@ -7,6 +7,6 @@ for (let i=1; i <= 5; i++){
 //bar chart 그리기
 const surface = {name: 'Bar chart', tab: 'Charts'};
 tfvis.render.barchart(surface, data, {
-    xLabel: 'i',
-    yLabel: 'i * 50'
+    xLabel: 'x-value',
+    yLabel: 'y-value'
 });

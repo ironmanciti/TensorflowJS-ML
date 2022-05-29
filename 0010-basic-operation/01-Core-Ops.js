@@ -3,7 +3,7 @@
 // const tense2 = tf.tensor([1,2,3,4], [4]);     //rank 0
 // const tense3 = tf.tensor([1,2,3,4], [1, 4]);  //rank 1
 // const tense4 = tf.tensor([1,2,3,4], [2, 2]);  //rank 2
-// const tense5 = tf.tensor([1,2,3,4], [2,2,1]); //rank 3
+// const tense5 = tf.tensor([1,2,3,4], [2, 2, 1]); //rank 3
 // tense1.print();
 // tense2.print();
 // tense3.print();
@@ -18,7 +18,7 @@
 // tf.print(["a = tensor / 2d array ", a]);
 // console.log(a);
 
-// //** 2d tensor of 3x5 ones **
+//** 2d tensor of 3x5 ones **
 // const zeros = tf.zeros([3, 5]);
 // tf.print(["tf.zeros = ", zeros]);
 // zeros.print(true);
@@ -44,46 +44,22 @@
 // e.mul(f).print();
 // e.div(f).print();
 
-// //**나머지
-// const a = tf.tensor([1, 4, 3, 16]);
-// const b = tf.tensor([1, 2, 9, 4]);
-// a.mod(b).print();  // or tf.mod(a, b)
-
-// //**지수승
-// const a = tf.tensor([[1, 2], [3, 4]])
-// const b = tf.tensor(2.5)
-// a.pow(b).print();  // or tf.pow(a, b)
-
-// console.log(a.shape);
-// console.log(a.size);
-// console.log(a.dtype);
-
-// //**Matrix Multiplication
-// a = tf.tensor2d([[1, 2]]);
-// b = tf.tensor2d([[1, 2], [3, 4]])
-// a.print();
-// b.print()
-
-// a.matMul(b).print(); // or tf.matMul(a, b)
-
-// //**전치 행렬
-// a = tf.tensor2d([1, 2, 3, 4, 5, 6], [2, 3]);
-// a.print();
-// a.transpose().print();
-
+// //** transpose - 전치 행렬
 // //** reshape - 형상 변경
 // a = tf.tensor2d([1, 2, 3, 4, 5, 6], [2, 3]);
 // a.print();
+// a.transpose().print();
 // a.reshape([3, 2]).print();
 
 // //**data 분할
-// //tf.split(x, [number1, number2, ...])
+// //tf.split(x, [split1, split2, ...])
 // const x = tf.tensor2d([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [5, 2]);
-// const [X_train, X_test] = tf.split(x, [3, 2]);
+// const [X_train, X_val, X_test] = tf.split(x, [2, 2, 1])
 // X_train.print();
+// X_val.print();
 // X_test.print();
 
-// //** feature sacling :  MinMax scaling
+// //** MinMax scaling : scaled = (X-min)/(max-min)
 // min = X_train.min();
 // max = X_train.max();
 // min.print()
@@ -91,22 +67,9 @@
 // scaled = X_train.sub(min).div(max.sub(min))
 // scaled.print()
 
-// //**Variables
-// const vtense = tf.variable(tf.tensor([1,2,3,4]));
-// vtense.print();
-// vtense.assign(tf.tensor([3,4,5,6]));
-// vtense.print();
-
-// //** 화살표 함수
-// const a = function(x){
-//     console.log(x);
-// }
-// a('aa');
-
-// const b = (x) => {
-//     console.log(x);
-// }
-// b('cc');
+//** Reverse scaling : X = scaled * (max-min) + min
+// const X = scaled.mul(max.sub(min)).add(min)
+// X.print();
 
 // //** 동기식, 비동기식 처리 비교
 // 1. callback 함수는 비동기적으로 실행
@@ -116,35 +79,47 @@
 
 // console.log('After setTimeout');
 
-// //2.  Promise - 비동기 코드 처리  
-// function foo(){
+// //2.  Promise (ES6) - 비동기 코드 처리  
+// function foo(number){
 //     return new Promise((resolve, reject) => {
 //         window.setTimeout(() => {
 //             console.log('setTimeout called');
-//             resolve(100);
+//             resolve(number+10);
 //         }, 1000);
-//     })
-// }
-
-// foo().then((result)=> console.log(result))
-
-// //** async, await (ES8) - 동기식 처리
-// async function makeRequest() {
-//     await foo().then(result => {
-//         console.log(result);
 //     });
-//     console.log('foo called')
 // }
-// makeRequest();
 
-// //**Tensor에서 비동기 method로 값 가져오기
-// //Tensor.array() or Tensor.data() method 이용(promise 반환)
+// foo(0).then((number) => {
+//     console.log(number);
+//     return foo(number);
+// }).then((number) => {
+//     console.log(number);
+//     return foo(number);
+// }).then((number) => {
+//     console.log(number);
+// })
+
+//** async, await (ES8) - 동기식 처리
+// const run = async() => {
+//     number = await foo(0);
+//     console.log(number);
+//     number = await foo(number);
+//     console.log(number);
+//     number = await foo(number);
+//     console.log(number);
+// }
+// run();
+
+// //**Tensor에서 비동기 method로 값 가져오기(promise 반환)
+// //Tensor.array() - 텐서 데이터를 중첩 배열로 반환
+// //Tensor.data() - tf.Tensor에서 값을 비동기적으로 다운로드
 // const a = tf.tensor([[1, 2], [3, 4]]);
 // a.array().then(array => console.log(array));
 // a.data().then(data => console.log(data));
 
 //**Tensor에서 동기식 method로 값 가져오기
-//Tensor.arraySync() or Tensor.dataSync() method 이용
+// //Tensor.arraySync() - 텐서 데이터를 중첩 배열로 반환
+// //Tensor.dataSync() - tf.Tensor에서 값을 동기적으로 다운로드
 //UI thread차단 문제를 일으킬 수 있으므로 운영 application에서는 비동기식 선호
 // console.log(a.arraySync());
 // console.log(a.dataSync());

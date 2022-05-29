@@ -8,7 +8,10 @@ let status;
 function setup() {
     createCanvas(640, 420);
     // img = createImg('images/cat.jpg', imageReady);
-    img = createImg('images/cat2.jpg', imageReady);
+    // img = createImg('images/cat2.jpg', imageReady);
+    // img = createImg('images/bird.png', imageReady);
+    // img = createImg('images/coffee.jpg', imageReady);
+    img = createImg('images/dog.jpg', imageReady);
     img.hide();
 }
 
@@ -29,7 +32,7 @@ function gotResult(err, results) {
 function draw() {
     // unless the model is loaded, do not draw anything to canvas
     if (yolo) {
-        image(img, 0, 0)
+        image(img, 0, 0, width, height)
 
         for (let i = 0; i < objects.length; i++) {
             noStroke();

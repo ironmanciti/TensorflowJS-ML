@@ -11,8 +11,8 @@ function setup() {
   poseNet = ml5.poseNet(video, () => console.log("model loaded"));
   //event listener 연결
   poseNet.on("pose", (result) => (pose = result[0].pose));
-}
-
+}  
+ 
 function draw() {
   image(video, 0, 0);
   if (pose) {
