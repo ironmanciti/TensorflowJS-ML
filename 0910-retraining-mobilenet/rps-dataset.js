@@ -15,6 +15,7 @@ class RPSDataset {
       const oldX = this.xs;
       this.xs = oldX.concat(example, 0);  //두번째 example부터는 이전 example들과 연결
       this.labels.push(label);
+      // console.log(this);
       oldX.dispose();
     }
   }

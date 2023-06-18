@@ -1,21 +1,19 @@
 <html>
   <head>
-    <!-- Load the latest version of TensorFlow.js -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"> </script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"> </script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"> </script</script>
   </head>
   <body>
     <h1>MobileNet 전이학습</h1>
     <!-- Add an image that we will use to test -->
-    <img id="img0" crossorigin='anonymous' src="https://i.imgur.com/JlUvsxa.jpg" width=140 height=140 />
-    <img id="img1" crossorigin='anonymous' src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFcepECVUcLvvbjaPHMIGWgAOJtamJuca6mw&usqp=CAUg" width=140 height=140 />
+    <img id="img0" crossorigin src="https://i.imgur.com/JlUvsxa.jpg" width=140 height=140 />
+    <img id="img1" crossorigin src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFcepECVUcLvvbjaPHMIGWgAOJtamJuca6mw&usqp=CAUg" width=140 height=140 />
     <img id="img2" src='./images/coffee.jpg'width=140 height=140 />
     <img id='img3' src='./images/banana.jpg' width=140 height=140 />
     <img id='img4' src='./images/bird.png' width=140 height=140 />
-    <div id="output" style="font-size:14px"></div>
-    <script>
-      /** code here **/
-    </script>
+    <div id="outp" style="font-size:14px"></div>
+
+    <script src="model-usage-solution.js"></script>
     <br>
 
   </body>

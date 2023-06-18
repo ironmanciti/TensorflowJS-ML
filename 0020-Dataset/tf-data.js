@@ -1,5 +1,5 @@
-// //* object로 이루어진 array 로부터 Dataset 생성
-// //* forEachAsync(f) - 데이터 세트의 모든 요소에 함수 적용
+// //object로 이루어진 array 로부터 Dataset 생성
+// //forEachAsync(f) - 데이터 세트의 모든 요소에 함수 적용
 // async function run1(){
 //     const myArray = [
 //         {x: [1, 0, 9], y: 10},
@@ -9,61 +9,54 @@
 
 //     const myFirstData = tf.data.array(myArray);
 //     await myFirstData.forEachAsync(e => console.log(e));
+//     console.log("Array Dataset Print 완료")
 // }
 // run1();
 
-//  //*Create a Dataset from CSV
+// // CSV에서 Dataset 만들기
 // async function run2(){
-   
-//     // const url =
-//     //     'https://storage.googleapis.com/tfjs-examples/multivariate-linear-regression/data/boston-housing-train.csv';
 //     const host = window.location.host;
-//     const url = "http://" + host + "/0020-Dataset/boston-housing-train.csv";
+//     const url = "http://" + host + "/0020-Dataset/kc_house_data.csv";
+//     console.log(url)
 
-//     const HouseSales = tf.data.csv(
-//         url, {
-//             columnConfig: {
-//                 medv: {
-//                     isLabel: true
-//                 }
-//             },
-//         });
+//     const csvDataset = tf.data.csv(url);
 
-//     // Prepare the Dataset for training.
-//     const flattenedDataset =
-//         HouseSales
-//         .map(({xs, ys}) => {
-//             // Convert xs(features) and ys(labels) 
-//             return {
-//                 xs: Object.values(xs),
-//                 ys: Object.values(ys)
-//             };
-//         })
-//         .batch(10);
+//     const data = await csvDataset.take(10).toArray();
+//     console.log(data)
 
-//     console.log(flattenedDataset);
+//     console.log(await csvDataset.columnNames());
+//     const numCols = (await csvDataset.columnNames()).length;
+//     console.log(`column 갯수 = ${numCols}`);
+
 // }
 // run2();
 
-// //** category 변수의 one-hot-encoding
-// async function run3(){
-//     const myArray = [
-//         {x: [1, 0], y: 0},
-//         {x: [5, 1], y: 1},
-//         {x: [1, 1], y: 2}
-//     ]
+//CSV에서 필요한 column만 filtering
+async function run3() {
+  const HouseSalesDataset = tf.data.csv("kc_house_data.csv", {
+    columnConfigs: {
+      sqft_living: { isLabel: false },
+      price: { isLabel: true }
+    },
+    configuredColumnsOnly: true
+  });
 
-//     //label 생성
-//     const labels = myArray.map(v => v.y) 
-//     console.log(labels)
+  //csv 파일 읽기
+  console.log("** CSV file =");
+  console.log(await HouseSalesDataset.take(5).toArray());
 
-//     //one-hot-encoding
-//     let labelTensor = tf.tensor1d(labels, "int32");
-//     labelTensor = tf.oneHot(labels, 3);
-//     console.log(labelTensor.arraySync())
+  //시각화
+  const dataPoints = await HouseSalesDataset.map(({xs, ys}) => ({
+    x: xs.sqft_living,
+    y: ys.price,
+  })).toArray();
 
-// }
-// run3();
+  console.log(dataPoints);
+}
+
+run3();
+
+
 
 
 

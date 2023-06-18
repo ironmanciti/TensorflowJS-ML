@@ -1,20 +1,14 @@
 //linechart
-const series1 = [];
-const series2 = [];
-//big noise 추가
-for (let i = 0; i < 100; i++) {
-    series1.push({
-        x: i,
-        y: i + Math.random() * 100
-    })
-}
-//small noise 추가
-for (let i = 0; i < 100; i++) {
-    series2.push({
-        x: i,
-        y: i + Math.random() * 5
-    })
-}
+
+const series1 = Array(100).fill(0)
+    .map(y => Math.random() * 100)
+    .map((y, x) => ({x, y: x + y}))
+
+const series2 = Array(100).fill(0)
+    .map(y => Math.random() * 5)
+    .map((y, x) => ({x, y: x + y}))
+
+
 //line chart
 const surface = {
     name: "Line Chart",
@@ -22,7 +16,7 @@ const surface = {
 };
 tfvis.render.linechart(surface, {
     values: [series1, series2],
-    series: ["Large Noise", "Small Noise"]
+    series: ["Large Noise", "Small Noise"]   //범례
 });
 
 //scatterplot

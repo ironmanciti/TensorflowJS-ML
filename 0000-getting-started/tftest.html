@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"> </script>
+    </head>
+    <script>
+        let havetf = 'yes';
+
+        try {
+            tf;
+        } catch {
+            havetf = 'no';
+        }
+    </script>
+    <body>
+        <p id="hw"></p>
+        <script>
+            document.getElementById("hw").innerHTML = '<h1>Tensorflow.js loaded? ' + havetf +'</h1>';
+        </script>
+    </body>
+
+</html>

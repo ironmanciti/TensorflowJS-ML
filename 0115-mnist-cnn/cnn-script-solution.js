@@ -1,5 +1,4 @@
 import {MnistData} from "./data.js";
-const EPOCHS = 10;
 
 //model 정의 - tf.sequential layer API 를 이용하여 CNN 구축
 function get_model() {
@@ -33,6 +32,7 @@ function get_model() {
         kernelInitializer: 'varianceScaling',
         activation: 'softmax'
     }));
+
     model.compile({
         optimizer: tf.train.adam(),
         loss: 'categoricalCrossentropy',
@@ -80,8 +80,10 @@ function doPrediction(model, data, testDataSize = 500) {
     const testData = data.nextTestBatch(testDataSize);
     const testXs = testData.xs.reshape([testDataSize, 28, 28, 1]);
 
+    // console.log(testData.labels.arraySync());
     const labels = testData.labels.argMax(-1);
     const preds = model.predict(testXs).argMax(-1);
+    // console.log(labels.arraySync());
 
     testXs.dispose();
     return [preds, labels];
@@ -101,7 +103,9 @@ async function showConfusion(model, data) {
     const [preds, labels] = doPrediction(model, data);
     const confusionMatrix = await tfvis.metrics.confusionMatrix(labels, preds);
     const container = {name: 'Confusion Matrix', tab: 'Evaluation'};
-    await tfvis.render.confusionMatrix(container, {values: confusionMatrix, tickLabels: classNames});
+
+    await tfvis.render.confusionMatrix(container,   
+        {values: confusionMatrix, tickLabels: classNames});
     
     preds.dispose();
     labels.dispose();
