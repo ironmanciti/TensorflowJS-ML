@@ -1,13 +1,13 @@
-// //** Tensors **
+//** Tensors **
 // const tense1 = tf.tensor([1,2,3,4]);
-// const tense2 = tf.tensor([1,2,3,4], [4]);     //rank 0
-// const tense3 = tf.tensor([1,2,3,4], [1, 4]);  //rank 1
-// const tense4 = tf.tensor([1,2,3,4], [2, 2]);  //rank 2
-// const tense5 = tf.tensor([1,2,3,4], [2, 2, 1]); //rank 3
 // tense1.print();
+// const tense2 = tf.tensor([1,2,3,4], [4]);     //rank 0
 // tense2.print();
+// const tense3 = tf.tensor([1,2,3,4], [1, 4]);  //rank 1
 // tense3.print();
+// const tense4 = tf.tensor([1,2,3,4], [2, 2]);  //rank 2
 // tense4.print();
+// const tense5 = tf.tensor([1,2,3,4], [2, 2, 1]); //rank 3
 // tense5.print();
 
 // //** 2d tensor 출력 **
@@ -80,21 +80,12 @@
 // console.log('After setTimeout');
 
 // //2.  Promise (ES6) - 비동기 코드 처리  
-// function foo(number){
-//     return new Promise((resolve, reject) => {
-//         window.setTimeout(() => {
-//             console.log('setTimeout called');
-//             resolve(number+10);
-//         }, 1000);
-//     });
-// }
-
-// function foo(n){
-//     return new Promise((resolve, reject) => {
-//         window.setTimeout(() => {
-//             console.log('setTimeout called');
-//             resolve(n+10)
-//         }, 1000);
+// function foo(number){ // 매개변수로 숫자를 받는 foo 함수를 선언합니다.
+//     return new Promise((resolve, reject) => { // 새 Promise 객체를 반환
+//         window.setTimeout(() => { // 1초 후에 함수를 비동기로 실행
+//             console.log('setTimeout called'); // "setTimeout called"를 콘솔에 출력
+//             resolve(number+10); // Promise 성공적으로 완료, 결과값 반환
+//         }, 1000); // 1초 경과한 후에 함수를 실행
 //     });
 // }
 
@@ -103,14 +94,13 @@
 //     console.log(n);
 // })
 
-
 //** async, await (ES8) - 동기식 처리
-// const run = async() => {
-//     number = await foo(200);
-//     console.log(number);
-//     console.log('After setTimeout')
+// const run = async() => { // 비동기 작업을 처리하는 async 함수인 run을 선언
+//     number = await foo(200); // foo 함수를 호출하고 결과값을 기다림.
+//     console.log(number); 
+//     console.log('After setTimeout') // "After setTimeout"을 콘솔에 출력
 // }
-// run();
+// run(); // run 함수를 호출
 
 //**Tensor에서 비동기 method로 값 가져오기(promise 반환)
 //Tensor.array() - 텐서 데이터를 중첩 배열로 반환

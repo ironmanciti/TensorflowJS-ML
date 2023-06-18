@@ -3,19 +3,28 @@
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"> </script>
     </head>
     <script>
+        // TensorFlow.js가 로드되었는지 확인하기 위한 변수를 선언합니다.
         let havetf = 'yes';
 
         try {
+            // tf가 정의되어 있는지 확인합니다. 만약 tf가 정의되어 있지 않다면, catch 블록으로 이동합니다.
             tf;
         } catch {
+            // tf가 정의되어 있지 않다면, 변수 havetf의 값을 'no'로 설정합니다.
             havetf = 'no';
         }
     </script>
+    
     <body>
-        <p id="hw"></p>
+        <h3>TensorFlow.js 라이브러리가 제대로 로드되었는지 확인하고, 그 결과를 웹 페이지에 표시하는 예제</h3>
+        <p id="hw"></p> <!-- id가 "hw"인 빈 <p> 태그를 만듭니다. -->
         <script>
-            document.getElementById("hw").innerHTML = '<h1>Tensorflow.js loaded? ' + havetf +'</h1>';
+            // "hw"라는 id를 가진 요소를 찾아서, 그 내부의 HTML을 변경합니다.
+            // 이 때, 'havetf' 변수의 값에 따라 문구가 변경됩니다.
+            // 만약 'havetf'의 값이 'yes'라면, Tensorflow.js가 로드되었음을, 'no'라면 로드되지 않았음을 나타냅니다.
+            document.getElementById("hw").innerHTML = '<h1>Tensorflow.js loaded? ' + havetf + '</h1>';
         </script>
     </body>
+
 
 </html>

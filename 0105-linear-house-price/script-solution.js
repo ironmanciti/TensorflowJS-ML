@@ -23,7 +23,7 @@ function denormalize(tensor, min, max) {
   return tensor.mul(max.sub(min)).add(min);
 }
 
-/ 모델을 훈련하는 main 함수
+// 모델을 훈련하는 main 함수
 async function train() {
   // CSV 데이터 불러오기
   const HouseSalesDataset = tf.data.csv("kc_house_data.csv", {

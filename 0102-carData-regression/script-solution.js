@@ -1,4 +1,4 @@
-//자동차 데이터를 관심 있는 변수로 줄이고 누락된 데이터를 제거합니다.
+// JSON 형식의 자동차 데이터를 가져온 후, 마력과 연비 정보만 추출하고 null 데이터를 제거
 async function getData(){
     const carDataResponse = await fetch('https://storage.googleapis.com/tfjs-tutorials/carsData.json');
     const carData = await carDataResponse.json();
@@ -9,7 +9,7 @@ async function getData(){
     .filter(car => (car.mpg != null && car.horsepower != null));
     return cleaned;
 }
-
+// 머신러닝 모델을 생성. 1개의 입력 레이어와 1개의 출력 레이어를 가진 모델을 생성.
 function createModel(){
     const model = tf.sequential()
     model.add(tf.layers.dense({inputShape: [1], units: 1}));
@@ -18,10 +18,7 @@ function createModel(){
     return model;
 }
 
-/*
-입력 데이터를 기계 학습에 사용할 수 있는 텐서로 변환합니다.
-또한 데이터를 셔플링하고 MPG를 정규화 할 것입니다.
-*/
+// JSON 형식의 데이터를 텐서로 변환하고, 데이터를 정규화하며, 정규화에 사용된 최소/최대값을 반환
 function convertToTensor(data){
     return tf.tidy(() => {
         //step1. 데이터 셔플링
@@ -55,7 +52,7 @@ function convertToTensor(data){
     });
 }
 
-//모델 학습
+// 머신러닝 모델을 학습시키는 함수
 async function trainModel(model, inputs, labels){
     model.compile({
         optimizer: tf.train.adam(),
@@ -78,6 +75,7 @@ async function trainModel(model, inputs, labels){
     });
 }
 
+// 학습된 머신러닝 모델로 예측을 수행하고, 원본 데이터와 예측 결과를 시각화
 function testModel(model, inputData, normalizationData){
     const {inputMax, inputMin, labelMax, labelMin} = normalizationData;
 
@@ -118,6 +116,7 @@ function testModel(model, inputData, normalizationData){
     )
 }
 
+// 위의 모든 과정을 순차적으로 실행
 async function run(){
     //훈련할 원본 입력 데이터를 로드
     const data = await getData();
@@ -153,4 +152,5 @@ async function run(){
     testModel(model, data, tensorData);
 }
 
+// 페이지 로드가 완료되면 run 함수를 실행
 document.addEventListener('DOMContentLoaded', run);
