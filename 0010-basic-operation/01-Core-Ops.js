@@ -1,9 +1,9 @@
 //** Tensors **
-// const tense1 = tf.tensor([1,2,3,4]);
+// const tense1 = tf.tensor([1,2,3,4]);  //rank 1
 // tense1.print();
-// const tense2 = tf.tensor([1,2,3,4], [4]);     //rank 0
+// const tense2 = tf.tensor([1,2,3,4], [4]);     //rank 1
 // tense2.print();
-// const tense3 = tf.tensor([1,2,3,4], [1, 4]);  //rank 1
+// const tense3 = tf.tensor([1,2,3,4], [1, 4]);  //rank 2
 // tense3.print();
 // const tense4 = tf.tensor([1,2,3,4], [2, 2]);  //rank 2
 // tense4.print();
@@ -51,9 +51,10 @@
 // a.transpose().print();
 // a.reshape([3, 2]).print();
 
-// //**data 분할
-//tf.split(x, [split1, split2, ...])
+//**data 분할
+// tf.split(x, [split1, split2, ...])
 // const x = tf.tensor2d([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [5, 2]);
+// //텐서 x를 2개, 2개, 1개의 텐서로 분할
 // const [X_train, X_val, X_test] = tf.split(x, [2, 2, 1])
 // X_train.print();
 // X_val.print();
@@ -72,7 +73,7 @@
 // X.print();
 
 // //** 동기식, 비동기식 처리 비교
-// 1. callback 함수는 비동기적으로 실행
+// //1. callback 함수는 비동기적으로 실행
 // window.setTimeout(() => {
 //     console.log('setTimeout called');
 // }, 3000);
@@ -94,7 +95,7 @@
 //     console.log(n);
 // })
 
-//** async, await (ES8) - 동기식 처리
+// //** async, await (ES8) - 동기식 처리
 // const run = async() => { // 비동기 작업을 처리하는 async 함수인 run을 선언
 //     number = await foo(200); // foo 함수를 호출하고 결과값을 기다림.
 //     console.log(number); 
@@ -102,21 +103,21 @@
 // }
 // run(); // run 함수를 호출
 
-//**Tensor에서 비동기 method로 값 가져오기(promise 반환)
-//Tensor.array() - 텐서 데이터를 중첩 배열로 반환
-//Tensor.data() - tf.Tensor에서 값을 비동기적으로 다운로드
+// //**Tensor에서 비동기 method로 값 가져오기(promise 반환)
+// //Tensor.array() - 텐서 데이터를 중첩 배열로 반환
+// //Tensor.data() - tf.Tensor에서 값을 비동기적으로 다운로드
 // const a = tf.tensor([[1, 2], [3, 4]]);
 // a.array().then(array => console.log(array));
 // a.data().then(data => console.log(data));
 
-//**Tensor에서 동기식 method로 값 가져오기
-//Tensor.arraySync() - 텐서 데이터를 중첩 배열로 반환
-//Tensor.dataSync() - tf.Tensor에서 값을 동기적으로 다운로드
-// UI thread 차단 문제를 일으킬 수 있으므로 운영 application에서는 비동기식 선호
+// //**Tensor에서 동기식 method로 값 가져오기
+// //Tensor.arraySync() - 텐서 데이터를 중첩 배열로 반환
+// //Tensor.dataSync() - tf.Tensor에서 값을 동기적으로 다운로드
+// //UI thread 차단 문제를 일으킬 수 있으므로 운영 application에서는 비동기식 선호
 // console.log(a.arraySync());
 // console.log(a.dataSync());
 
-//**flatten() - 1D array로 tensor 를 flatten
+// //**flatten() - 1D array로 tensor 를 flatten
 // const xs = tf.tensor([1, 2, 3, 4], [2, 2]);
 // xs.print(true);
 // xs.flatten().print();

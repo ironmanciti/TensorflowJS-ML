@@ -198,7 +198,7 @@ async function predict() {
     document.getElementById("predict-input-3").value
   );
 
-  if (isNaN(predInputTwo) || isNaN(predInputTwo) || isNaN(predInptThree)) {
+  if (isNaN(predInputOne) || isNaN(predInputTwo) || isNaN(predInptThree)) {
     alert("숫자를 입력하세요");
   } else {
     const features = [predInputOne, predInputTwo, predInptThree];

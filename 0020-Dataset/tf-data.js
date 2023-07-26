@@ -1,5 +1,5 @@
-// //object로 이루어진 array 로부터 Dataset 생성
-// //forEachAsync(f) - 데이터 세트의 모든 요소에 함수 적용
+//object로 이루어진 array 로부터 Dataset 생성
+//forEachAsync(f) - 데이터 세트의 모든 요소에 함수 적용
 // async function run1(){ // 비동기 작업을 처리하는 async 함수인 run1
 //     const myArray = [ // JavaScript 객체를 element로 갖는 배열 myArray
 //         {x: [1, 0, 9], y: 10},
@@ -17,7 +17,7 @@
 
 
 // CSV에서 Dataset 만들기
-// async function run2(){ // 비동기 작업을 처리하는 async 함수인
+// async function run2(){ 
 //     const host = window.location.host; // 현재 웹 페이지의 호스트명
 //     const url = "http://" + host + "/0020-Dataset/kc_house_data.csv"; // CSV 파일 URL 생성
 //     console.log(url) 
@@ -35,7 +35,7 @@
 
 
 //CSV에서 필요한 column만 filtering
-// async function run3() { // 비동기 작업을 처리하는 async 함수
+// async function run3() { 
 //   // CSV 파일에서 TensorFlow.js 데이터셋을 생성
 //   const HouseSalesDataset = tf.data.csv("kc_house_data.csv", { 
 //     columnConfigs: { // 각 열에 대한 설정을 지정
