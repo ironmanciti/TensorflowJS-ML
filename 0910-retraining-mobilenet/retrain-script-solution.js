@@ -31,6 +31,7 @@ function handleButton(elem){
     // 선택된 라벨(바위, 가위, 보)을 정수로 변환하고, 이미지를 캡처하고 example을 추가
     label = parseInt(elem.id)
     const img = webcam.capture();
+    // 'dataset'에 예시를 추가합니다. 예시는 mobilenet 모델이 'img'를 입력받아 예측한 결과와 그에 해당하는 라벨 'label'의 쌍으로 구성됩니다.
     dataset.addExample(mobilenet.predict(img), label)
 }
 
@@ -111,6 +112,7 @@ async function predict() {
 // 훈련을 시작하는 함수
 function doTraining(){
     console.log('train... begins')
+    // console.log(dataset);
 	train();
 }
 // 예측을 시작하는 함수
@@ -127,9 +129,9 @@ function stopPredicting(){
 async function init(){
     //webcam 초기화,
     await webcam.setup()
-    //truncated mobilenet load
-    mobilenet = await 
-        tf.loadLayersModel('https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json');
+    // truncated(절단된) mobilenet 모델을 불러옵니다.
+    mobilenet = await tf.loadLayersModel('https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json');
+    // mobilenet 모델에서 'conv_pw_13_relu' 레이어를 가져옵니다.
     const layer = mobilenet.getLayer('conv_pw_13_relu');
 
     //truncated mobilenet model 생성

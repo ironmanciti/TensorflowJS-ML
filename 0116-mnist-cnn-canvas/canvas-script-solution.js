@@ -10,10 +10,10 @@ async function getModel() {
   return model;
 }
 
-//마우스 절대 위치를 설정
+//마우스 절대 위치를 캔버스내 상대 위치로 설정
 function setPosition(e) {
-  pos.x = e.clientX - 100;  //absolute position 100
-  pos.y = e.clientY - 100;  //absolute position 100
+  pos.x = e.clientX - 100;  //절대위치를 캔버스내의 상대위치로 변환
+  pos.y = e.clientY - 100;  
 }
 
 // 손글씨 그리기

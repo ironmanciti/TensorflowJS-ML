@@ -12,7 +12,7 @@ async function getData(){
 // 머신러닝 모델을 생성. 1개의 입력 레이어와 1개의 출력 레이어를 가진 모델을 생성.
 function createModel(){
     const model = tf.sequential()
-    model.add(tf.layers.dense({inputShape: [1], units: 1}));
+    model.add(tf.layers.dense({inputShape: [1], units: 3, activation: 'relu'}));
     // model.add(tf.layers.dense({units: 16, activation: 'relu'}));
     model.add(tf.layers.dense({units: 1}));
     return model;
